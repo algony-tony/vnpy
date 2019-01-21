@@ -99,7 +99,6 @@ class BacktestingEngine(object):
         self.dailyResultDict = OrderedDict()
 
     # 通用功能
-
     def roundToPriceTick(self, price):
         """取整价格到合约最小价格变动"""
         if not self.priceTick:
@@ -113,7 +112,6 @@ class BacktestingEngine(object):
         print(str(datetime.now()) + "\t" + content)
 
     # 参数设置相关
-
     def setStartDate(self, startDate='20100416', initDays=10):
         """设置回测的启动日期"""
         self.startDate = startDate

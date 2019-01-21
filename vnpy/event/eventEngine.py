@@ -14,7 +14,6 @@ from qtpy.QtCore import QTimer
 from .eventType import *
 
 
-########################################################################
 class EventEngine(object):
     """
     事件驱动引擎
@@ -51,7 +50,6 @@ class EventEngine(object):
         
     """
 
-    #----------------------------------------------------------------------
     def __init__(self):
         """初始化事件引擎"""
         # 事件队列
@@ -74,7 +72,6 @@ class EventEngine(object):
         # __generalHandlers是一个列表，用来保存通用回调函数（所有事件均调用）
         self.__generalHandlers = []
         
-    #----------------------------------------------------------------------
     def __run(self):
         """引擎运行"""
         while self.__active == True:
@@ -84,7 +81,6 @@ class EventEngine(object):
             except Empty:
                 pass
             
-    #----------------------------------------------------------------------
     def __process(self, event):
         """处理事件"""
         # 检查是否存在对该事件进行监听的处理函数
@@ -100,7 +96,6 @@ class EventEngine(object):
         if self.__generalHandlers:
             [handler(event) for handler in self.__generalHandlers]
                
-    #----------------------------------------------------------------------
     def __onTimer(self):
         """向事件队列中存入计时器事件"""
         # 创建计时器事件
@@ -109,7 +104,6 @@ class EventEngine(object):
         # 向队列中存入计时器事件
         self.put(event)    
 
-    #----------------------------------------------------------------------
     def start(self, timer=True):
         """
         引擎启动
@@ -125,7 +119,6 @@ class EventEngine(object):
         if timer:
             self.__timer.start(1000)
     
-    #----------------------------------------------------------------------
     def stop(self):
         """停止引擎"""
         # 将引擎设为停止
@@ -137,7 +130,6 @@ class EventEngine(object):
         # 等待事件处理线程退出
         self.__thread.join()
             
-    #----------------------------------------------------------------------
     def register(self, type_, handler):
         """注册事件处理函数监听"""
         # 尝试获取该事件类型对应的处理函数列表，若无defaultDict会自动创建新的list
@@ -147,7 +139,6 @@ class EventEngine(object):
         if handler not in handlerList:
             handlerList.append(handler)
             
-    #----------------------------------------------------------------------
     def unregister(self, type_, handler):
         """注销事件处理函数监听"""
         # 尝试获取该事件类型对应的处理函数列表，若无则忽略该次注销请求   
@@ -161,18 +152,15 @@ class EventEngine(object):
         if not handlerList:
             del self.__handlers[type_]
             
-    #----------------------------------------------------------------------
     def put(self, event):
         """向事件队列中存入事件"""
         self.__queue.put(event)
         
-    #----------------------------------------------------------------------
     def registerGeneralHandler(self, handler):
         """注册通用事件处理函数监听"""
         if handler not in self.__generalHandlers:
             self.__generalHandlers.append(handler)
             
-    #----------------------------------------------------------------------
     def unregisterGeneralHandler(self, handler):
         """注销通用事件处理函数监听"""
         if handler in self.__generalHandlers:
@@ -180,13 +168,11 @@ class EventEngine(object):
         
 
 
-########################################################################
 class EventEngine2(object):
     """
     计时器使用python线程的事件驱动引擎        
     """
 
-    #----------------------------------------------------------------------
     def __init__(self):
         """初始化事件引擎"""
         # 事件队列
@@ -210,7 +196,6 @@ class EventEngine2(object):
         # __generalHandlers是一个列表，用来保存通用回调函数（所有事件均调用）
         self.__generalHandlers = []        
         
-    #----------------------------------------------------------------------
     def __run(self):
         """引擎运行"""
         while self.__active == True:
@@ -220,7 +205,6 @@ class EventEngine2(object):
             except Empty:
                 pass
             
-    #----------------------------------------------------------------------
     def __process(self, event):
         """处理事件"""
         # 检查是否存在对该事件进行监听的处理函数
@@ -236,7 +220,6 @@ class EventEngine2(object):
         if self.__generalHandlers:
             [handler(event) for handler in self.__generalHandlers]        
                
-    #----------------------------------------------------------------------
     def __runTimer(self):
         """运行在计时器线程中的循环函数"""
         while self.__timerActive:
@@ -249,7 +232,6 @@ class EventEngine2(object):
             # 等待
             sleep(self.__timerSleep)
 
-    #----------------------------------------------------------------------
     def start(self, timer=True):
         """
         引擎启动
@@ -266,7 +248,6 @@ class EventEngine2(object):
             self.__timerActive = True
             self.__timer.start()
     
-    #----------------------------------------------------------------------
     def stop(self):
         """停止引擎"""
         # 将引擎设为停止
@@ -279,7 +260,6 @@ class EventEngine2(object):
         # 等待事件处理线程退出
         self.__thread.join()
             
-    #----------------------------------------------------------------------
     def register(self, type_, handler):
         """注册事件处理函数监听"""
         # 尝试获取该事件类型对应的处理函数列表，若无defaultDict会自动创建新的list
@@ -289,7 +269,6 @@ class EventEngine2(object):
         if handler not in handlerList:
             handlerList.append(handler)
             
-    #----------------------------------------------------------------------
     def unregister(self, type_, handler):
         """注销事件处理函数监听"""
         # 尝试获取该事件类型对应的处理函数列表，若无则忽略该次注销请求   
@@ -303,36 +282,30 @@ class EventEngine2(object):
         if not handlerList:
             del self.__handlers[type_]  
         
-    #----------------------------------------------------------------------
     def put(self, event):
         """向事件队列中存入事件"""
         self.__queue.put(event)
 
-    #----------------------------------------------------------------------
     def registerGeneralHandler(self, handler):
         """注册通用事件处理函数监听"""
         if handler not in self.__generalHandlers:
             self.__generalHandlers.append(handler)
             
-    #----------------------------------------------------------------------
     def unregisterGeneralHandler(self, handler):
         """注销通用事件处理函数监听"""
         if handler in self.__generalHandlers:
             self.__generalHandlers.remove(handler)
 
 
-########################################################################
 class Event:
     """事件对象"""
 
-    #----------------------------------------------------------------------
     def __init__(self, type_=None):
         """Constructor"""
         self.type_ = type_      # 事件类型
         self.dict_ = {}         # 字典用于保存具体的事件数据
 
 
-#----------------------------------------------------------------------
 def test():
     """测试函数"""
     import sys

@@ -21,11 +21,9 @@ from vnpy.trader.vtFunction import getTempPath
 
 
 
-########################################################################
 class MainEngine(object):
     """主引擎"""
 
-    #----------------------------------------------------------------------
     def __init__(self, eventEngine):
         """Constructor"""
         # 记录今日日期
@@ -56,7 +54,6 @@ class MainEngine(object):
         self.logEngine = None
         self.initLogEngine()
 
-    #----------------------------------------------------------------------
     def addGateway(self, gatewayModule):
         """添加底层接口"""
         gatewayName = gatewayModule.gatewayName
@@ -77,7 +74,6 @@ class MainEngine(object):
         }
         self.gatewayDetailList.append(d)
         
-    #----------------------------------------------------------------------
     def addApp(self, appModule):
         """添加上层应用"""
         appName = appModule.appName
@@ -97,7 +93,6 @@ class MainEngine(object):
         }
         self.appDetailList.append(d)
         
-    #----------------------------------------------------------------------
     def getGateway(self, gatewayName):
         """获取接口"""
         if gatewayName in self.gatewayDict:
@@ -106,7 +101,6 @@ class MainEngine(object):
             self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))
             return None
         
-    #----------------------------------------------------------------------
     def connect(self, gatewayName):
         """连接特定名称的接口"""
         gateway = self.getGateway(gatewayName)
@@ -116,7 +110,6 @@ class MainEngine(object):
         
         self.dbConnect()
    
-    #----------------------------------------------------------------------
     def subscribe(self, subscribeReq, gatewayName):
         """订阅特定接口的行情"""
         gateway = self.getGateway(gatewayName)
@@ -124,7 +117,6 @@ class MainEngine(object):
         if gateway:
             gateway.subscribe(subscribeReq)
   
-    #----------------------------------------------------------------------
     def sendOrder(self, orderReq, gatewayName):
         """对特定接口发单"""
         # 如果创建了风控引擎，且风控检查失败则不发单
@@ -140,7 +132,6 @@ class MainEngine(object):
         else:
             return ''
         
-    #----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq, gatewayName):
         """对特定接口撤单"""
         gateway = self.getGateway(gatewayName)
@@ -148,7 +139,6 @@ class MainEngine(object):
         if gateway:
             gateway.cancelOrder(cancelOrderReq)   
   
-    #----------------------------------------------------------------------
     def qryAccount(self, gatewayName):
         """查询特定接口的账户"""
         gateway = self.getGateway(gatewayName)
@@ -156,7 +146,6 @@ class MainEngine(object):
         if gateway:
             gateway.qryAccount()      
         
-    #----------------------------------------------------------------------
     def qryPosition(self, gatewayName):
         """查询特定接口的持仓"""
         gateway = self.getGateway(gatewayName)
@@ -164,7 +153,6 @@ class MainEngine(object):
         if gateway:
             gateway.qryPosition()
             
-    #----------------------------------------------------------------------
     def exit(self):
         """退出程序前调用，保证正常退出"""        
         # 安全关闭所有接口
@@ -181,7 +169,6 @@ class MainEngine(object):
         # 保存数据引擎里的合约数据到硬盘
         self.dataEngine.saveContracts()
     
-    #----------------------------------------------------------------------
     def writeLog(self, content):
         """快速发出日志事件"""
         log = VtLogData()
@@ -191,7 +178,6 @@ class MainEngine(object):
         event.dict_['data'] = log
         self.eventEngine.put(event)        
     
-    #----------------------------------------------------------------------
     def dbConnect(self):
         """连接MongoDB数据库"""
         if not self.dbClient:
@@ -213,7 +199,6 @@ class MainEngine(object):
                 self.dbClient = None
                 self.writeLog(text.DATABASE_CONNECTING_FAILED)
     
-    #----------------------------------------------------------------------
     def dbInsert(self, dbName, collectionName, d):
         """向MongoDB中插入数据，d是具体数据"""
         if self.dbClient:
@@ -223,7 +208,6 @@ class MainEngine(object):
         else:
             self.writeLog(text.DATA_INSERT_FAILED)
     
-    #----------------------------------------------------------------------
     def dbQuery(self, dbName, collectionName, d, sortKey='', sortDirection=ASCENDING):
         """从MongoDB中读取数据，d是查询要求，返回的是数据库查询的指针"""
         if self.dbClient:
@@ -243,7 +227,6 @@ class MainEngine(object):
             self.writeLog(text.DATA_QUERY_FAILED)   
             return []
         
-    #----------------------------------------------------------------------
     def dbUpdate(self, dbName, collectionName, d, flt, upsert=False):
         """向MongoDB中更新数据，d是具体数据，flt是过滤条件，upsert代表若无是否要插入"""
         if self.dbClient:
@@ -253,7 +236,6 @@ class MainEngine(object):
         else:
             self.writeLog(text.DATA_UPDATE_FAILED)   
     
-    #----------------------------------------------------------------------
     def dbDelete(self, dbName, collectionName, flt):
         """从数据库中删除数据，flt是过滤条件"""
         if self.dbClient:
@@ -263,7 +245,6 @@ class MainEngine(object):
         else:
             self.writeLog(text.DATA_DELETE_FAILED)          
             
-    #----------------------------------------------------------------------
     def dbLogging(self, event):
         """向MongoDB中插入日志"""
         log = event.dict_['data']
@@ -274,77 +255,62 @@ class MainEngine(object):
         }
         self.dbInsert(LOG_DB_NAME, self.todayDate, d)
     
-    #----------------------------------------------------------------------
     def getTick(self, vtSymbol):
         """查询行情"""
         return self.dataEngine.getTick(vtSymbol)          
     
-    #----------------------------------------------------------------------
     def getContract(self, vtSymbol):
         """查询合约"""
         return self.dataEngine.getContract(vtSymbol)
     
-    #----------------------------------------------------------------------
     def getAllContracts(self):
         """查询所有合约（返回列表）"""
         return self.dataEngine.getAllContracts()
     
-    #----------------------------------------------------------------------
     def getOrder(self, vtOrderID):
         """查询委托"""
         return self.dataEngine.getOrder(vtOrderID)
     
-    #----------------------------------------------------------------------
     def getPositionDetail(self, vtSymbol):
         """查询持仓细节"""
         return self.dataEngine.getPositionDetail(vtSymbol)
     
-    #----------------------------------------------------------------------
     def getAllWorkingOrders(self):
         """查询所有的活跃的委托（返回列表）"""
         return self.dataEngine.getAllWorkingOrders()
     
-    #----------------------------------------------------------------------
     def getAllOrders(self):
         """查询所有委托"""
         return self.dataEngine.getAllOrders()
     
-    #----------------------------------------------------------------------
     def getAllTrades(self):
         """查询所有成交"""
         return self.dataEngine.getAllTrades()    
     
-    #----------------------------------------------------------------------
     def getAllAccounts(self):
         """查询所有账户"""
         return self.dataEngine.getAllAccounts()
     
-    #----------------------------------------------------------------------
     def getAllPositions(self):
         """查询所有持仓"""
         return self.dataEngine.getAllPositions()
     
-    #----------------------------------------------------------------------
     def getAllPositionDetails(self):
         """查询本地持仓缓存细节"""
         return self.dataEngine.getAllPositionDetails()
     
-    #----------------------------------------------------------------------
     def getAllGatewayDetails(self):
         """查询引擎中所有底层接口的信息"""
         return self.gatewayDetailList
     
-    #----------------------------------------------------------------------
     def getAllAppDetails(self):
         """查询引擎中所有上层应用的信息"""
         return self.appDetailList
     
-    #----------------------------------------------------------------------
     def getApp(self, appName):
         """获取APP引擎对象"""
         return self.appDict[appName]
     
-    #----------------------------------------------------------------------
     def initLogEngine(self):
         """初始化日志引擎"""
         if not globalSetting["logActive"]:
@@ -374,29 +340,24 @@ class MainEngine(object):
         # 注册事件监听
         self.registerLogEvent(EVENT_LOG)
     
-    #----------------------------------------------------------------------
     def registerLogEvent(self, eventType):
         """注册日志事件监听"""
         if self.logEngine:
             self.eventEngine.register(eventType, self.logEngine.processLogEvent)
     
-    #----------------------------------------------------------------------
     def convertOrderReq(self, req):
         """转换委托请求"""
         return self.dataEngine.convertOrderReq(req)
 
-    #----------------------------------------------------------------------
     def getLog(self):
         """查询日志"""
         return self.dataEngine.getLog()
     
-    #----------------------------------------------------------------------
     def getError(self):
         """查询错误"""
         return self.dataEngine.getError()
     
 
-########################################################################
 class DataEngine(object):
     """数据引擎"""
     contractFileName = 'ContractData.vt'
@@ -404,7 +365,6 @@ class DataEngine(object):
     
     FINISHED_STATUS = [STATUS_ALLTRADED, STATUS_REJECTED, STATUS_CANCELLED]
 
-    #----------------------------------------------------------------------
     def __init__(self, eventEngine):
         """Constructor"""
         self.eventEngine = eventEngine
@@ -430,7 +390,6 @@ class DataEngine(object):
         # 注册事件监听
         self.registerEvent()
     
-    #----------------------------------------------------------------------
     def registerEvent(self):
         """注册事件监听"""
         self.eventEngine.register(EVENT_TICK, self.processTickEvent)
@@ -442,20 +401,17 @@ class DataEngine(object):
         self.eventEngine.register(EVENT_LOG, self.processLogEvent)
         self.eventEngine.register(EVENT_ERROR, self.processErrorEvent)
         
-    #----------------------------------------------------------------------
     def processTickEvent(self, event):
         """处理成交事件"""
         tick = event.dict_['data']
         self.tickDict[tick.vtSymbol] = tick    
     
-    #----------------------------------------------------------------------
     def processContractEvent(self, event):
         """处理合约事件"""
         contract = event.dict_['data']
         self.contractDict[contract.vtSymbol] = contract
         self.contractDict[contract.symbol] = contract       # 使用常规代码（不包括交易所）可能导致重复
     
-    #----------------------------------------------------------------------
     def processOrderEvent(self, event):
         """处理委托事件"""
         order = event.dict_['data']        
@@ -473,7 +429,6 @@ class DataEngine(object):
         detail = self.getPositionDetail(order.vtSymbol)
         detail.updateOrder(order)            
             
-    #----------------------------------------------------------------------
     def processTradeEvent(self, event):
         """处理成交事件"""
         trade = event.dict_['data']
@@ -484,7 +439,6 @@ class DataEngine(object):
         detail = self.getPositionDetail(trade.vtSymbol)
         detail.updateTrade(trade)        
 
-    #----------------------------------------------------------------------
     def processPositionEvent(self, event):
         """处理持仓事件"""
         pos = event.dict_['data']
@@ -495,25 +449,21 @@ class DataEngine(object):
         detail = self.getPositionDetail(pos.vtSymbol)
         detail.updatePosition(pos)                
         
-    #----------------------------------------------------------------------
     def processAccountEvent(self, event):
         """处理账户事件"""
         account = event.dict_['data']
         self.accountDict[account.vtAccountID] = account
     
-    #----------------------------------------------------------------------
     def processLogEvent(self, event):
         """处理日志事件"""
         log = event.dict_['data']
         self.logList.append(log)
     
-    #----------------------------------------------------------------------
     def processErrorEvent(self, event):
         """处理错误事件"""
         error = event.dict_['data']
         self.errorList.append(error)
         
-    #----------------------------------------------------------------------
     def getTick(self, vtSymbol):
         """查询行情对象"""
         try:
@@ -521,7 +471,6 @@ class DataEngine(object):
         except KeyError:
             return None        
     
-    #----------------------------------------------------------------------
     def getContract(self, vtSymbol):
         """查询合约对象"""
         try:
@@ -529,19 +478,16 @@ class DataEngine(object):
         except KeyError:
             return None
         
-    #----------------------------------------------------------------------
     def getAllContracts(self):
         """查询所有合约对象（返回列表）"""
         return self.contractDict.values()
     
-    #----------------------------------------------------------------------
     def saveContracts(self):
         """保存所有合约对象到硬盘"""
         f = shelve.open(self.contractFilePath)
         f['data'] = self.contractDict
         f.close()
     
-    #----------------------------------------------------------------------
     def loadContracts(self):
         """从硬盘读取合约对象"""
         f = shelve.open(self.contractFilePath)
@@ -551,7 +497,6 @@ class DataEngine(object):
                 self.contractDict[key] = value
         f.close()
         
-    #----------------------------------------------------------------------
     def getOrder(self, vtOrderID):
         """查询委托"""
         try:
@@ -559,32 +504,26 @@ class DataEngine(object):
         except KeyError:
             return None
     
-    #----------------------------------------------------------------------
     def getAllWorkingOrders(self):
         """查询所有活动委托（返回列表）"""
         return self.workingOrderDict.values()
     
-    #----------------------------------------------------------------------
     def getAllOrders(self):
         """获取所有委托"""
         return self.orderDict.values()
     
-    #----------------------------------------------------------------------
     def getAllTrades(self):
         """获取所有成交"""
         return self.tradeDict.values()
     
-    #----------------------------------------------------------------------
     def getAllPositions(self):
         """获取所有持仓"""
         return self.positionDict.values()
     
-    #----------------------------------------------------------------------
     def getAllAccounts(self):
         """获取所有资金"""
         return self.accountDict.values()
     
-    #----------------------------------------------------------------------
     def getPositionDetail(self, vtSymbol):
         """查询持仓细节"""
         if vtSymbol in self.detailDict:
@@ -611,12 +550,10 @@ class DataEngine(object):
                 
         return detail
     
-    #----------------------------------------------------------------------
     def getAllPositionDetails(self):
         """查询所有本地持仓缓存细节"""
         return self.detailDict.values()
     
-    #----------------------------------------------------------------------
     def updateOrderReq(self, req, vtOrderID):
         """委托请求更新"""
         vtSymbol = req.vtSymbol
@@ -624,7 +561,6 @@ class DataEngine(object):
         detail = self.getPositionDetail(vtSymbol)
         detail.updateOrderReq(req, vtOrderID)
     
-    #----------------------------------------------------------------------
     def convertOrderReq(self, req):
         """根据规则转换委托请求"""
         detail = self.detailDict.get(req.vtSymbol, None)
@@ -633,18 +569,15 @@ class DataEngine(object):
         else:
             return detail.convertOrderReq(req)
 
-    #----------------------------------------------------------------------
     def getLog(self):
         """获取日志"""
         return self.logList
     
-    #----------------------------------------------------------------------
     def getError(self):
         """获取错误"""
         return self.errorList
     
 
-########################################################################    
 class LogEngine(object):
     """日志引擎"""
     
@@ -658,7 +591,6 @@ class LogEngine(object):
     LEVEL_ERROR = logging.ERROR
     LEVEL_CRITICAL = logging.CRITICAL
 
-    #----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
         self.logger = logging.getLogger()        
@@ -681,13 +613,11 @@ class LogEngine(object):
             self.LEVEL_CRITICAL: self.critical,
         }
         
-    #----------------------------------------------------------------------
     def setLogLevel(self, level):
         """设置日志级别"""
         self.logger.setLevel(level)
         self.level = level
     
-    #----------------------------------------------------------------------
     def addConsoleHandler(self):
         """添加终端输出"""
         if not self.consoleHandler:
@@ -696,7 +626,6 @@ class LogEngine(object):
             self.consoleHandler.setFormatter(self.formatter)
             self.logger.addHandler(self.consoleHandler)
             
-    #----------------------------------------------------------------------
     def addFileHandler(self, filename=''):
         """添加文件输出"""
         if not self.fileHandler:
@@ -708,37 +637,30 @@ class LogEngine(object):
             self.fileHandler.setFormatter(self.formatter)
             self.logger.addHandler(self.fileHandler)
     
-    #----------------------------------------------------------------------
     def debug(self, msg):
         """开发时用"""
         self.logger.debug(msg)
         
-    #----------------------------------------------------------------------
     def info(self, msg):
         """正常输出"""
         self.logger.info(msg)
         
-    #----------------------------------------------------------------------
     def warn(self, msg):
         """警告信息"""
         self.logger.warn(msg)
         
-    #----------------------------------------------------------------------
     def error(self, msg):
         """报错输出"""
         self.logger.error(msg)
         
-    #----------------------------------------------------------------------
     def exception(self, msg):
         """报错输出+记录异常信息"""
         self.logger.exception(msg)
 
-    #----------------------------------------------------------------------
     def critical(self, msg):
         """影响程序运行的严重错误"""
         self.logger.critical(msg)
 
-    #----------------------------------------------------------------------
     def processLogEvent(self, event):
         """处理日志事件"""
         log = event.dict_['data']
@@ -747,7 +669,6 @@ class LogEngine(object):
         function(msg)
   
     
-########################################################################
 class PositionDetail(object):
     """本地维护的持仓信息"""
     WORKING_STATUS = [STATUS_UNKNOWN, STATUS_NOTTRADED, STATUS_PARTTRADED]
@@ -756,7 +677,6 @@ class PositionDetail(object):
     MODE_SHFE = 'shfe'              # 上期所今昨分别平仓
     MODE_TDPENALTY = 'tdpenalty'    # 平今惩罚
 
-    #----------------------------------------------------------------------
     def __init__(self, vtSymbol, contract=None):
         """Constructor"""
         self.vtSymbol = vtSymbol
@@ -796,7 +716,6 @@ class PositionDetail(object):
         
         self.workingOrderDict = {}
         
-    #----------------------------------------------------------------------
     def updateTrade(self, trade):
         """成交更新"""
         # 多头
@@ -851,7 +770,6 @@ class PositionDetail(object):
         self.calculatePosition()
         self.calculatePnl()
     
-    #----------------------------------------------------------------------
     def updateOrder(self, order):
         """委托更新"""
         # 将活动委托缓存下来
@@ -866,7 +784,6 @@ class PositionDetail(object):
         # 计算冻结
         self.calculateFrozen()
     
-    #----------------------------------------------------------------------
     def updatePosition(self, pos):
         """持仓更新"""
         if pos.direction is DIRECTION_LONG:
@@ -882,7 +799,6 @@ class PositionDetail(object):
             self.shortPnl = pos.positionProfit
             self.shortPrice = pos.price
             
-    #----------------------------------------------------------------------
     def updateOrderReq(self, req, vtOrderID):
         """发单更新"""
         vtSymbol = req.vtSymbol        
@@ -903,19 +819,16 @@ class PositionDetail(object):
         # 计算冻结量
         self.calculateFrozen()
         
-    #----------------------------------------------------------------------
     def updateTick(self, tick):
         """行情更新"""
         self.lastPrice = tick.lastPrice
         self.calculatePnl()
         
-    #----------------------------------------------------------------------
     def calculatePnl(self):
         """计算持仓盈亏"""
         self.longPnl = self.longPos * (self.lastPrice - self.longPrice) * self.size
         self.shortPnl = self.shortPos * (self.shortPrice - self.lastPrice) * self.size
         
-    #----------------------------------------------------------------------
     def calculatePrice(self, trade):
         """计算持仓均价（基于成交数据）"""
         # 只有开仓会影响持仓均价
@@ -937,13 +850,11 @@ class PositionDetail(object):
                 else:
                     self.shortPrice = 0
     
-    #----------------------------------------------------------------------
     def calculatePosition(self):
         """计算持仓情况"""
         self.longPos = self.longTd + self.longYd
         self.shortPos = self.shortTd + self.shortYd      
         
-    #----------------------------------------------------------------------
     def calculateFrozen(self):
         """计算冻结情况"""
         # 清空冻结数据
@@ -994,7 +905,6 @@ class PositionDetail(object):
             self.longPosFrozen = self.longYdFrozen + self.longTdFrozen
             self.shortPosFrozen = self.shortYdFrozen + self.shortTdFrozen
             
-    #----------------------------------------------------------------------
     def convertOrderReq(self, req):
         """转换委托请求"""
         # 普通模式无需转换

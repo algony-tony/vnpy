@@ -17,7 +17,6 @@ pLoads = cPickle.loads
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 
-########################################################################
 class RpcObject(object):
     """
     RPC对象
@@ -34,77 +33,63 @@ class RpcObject(object):
     如果希望使用其他的序列化工具也可以在这里添加。
     """
 
-    #----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
         # 默认使用msgpack作为序列化工具
         #self.useMsgpack()
         self.usePickle()
 
-    #----------------------------------------------------------------------
     def pack(self, data):
         """打包"""
         pass
 
-    #----------------------------------------------------------------------
     def unpack(self, data):
         """解包"""
         pass
 
-    #----------------------------------------------------------------------
     def __jsonPack(self, data):
         """使用json打包"""
         return dumps(data)
 
-    #----------------------------------------------------------------------
     def __jsonUnpack(self, data):
         """使用json解包"""
         return loads(data)
 
-    #----------------------------------------------------------------------
     def __msgpackPack(self, data):
         """使用msgpack打包"""
         return packb(data)
 
-    #----------------------------------------------------------------------
     def __msgpackUnpack(self, data):
         """使用msgpack解包"""
         return unpackb(data)
 
-    #----------------------------------------------------------------------
     def __picklePack(self, data):
         """使用cPickle打包"""
         return pDumps(data)
 
-    #----------------------------------------------------------------------
     def __pickleUnpack(self, data):
         """使用cPickle解包"""
         return pLoads(data)
 
-    #----------------------------------------------------------------------
     def useJson(self):
         """使用json作为序列化工具"""
         self.pack = self.__jsonPack
         self.unpack = self.__jsonUnpack
 
-    #----------------------------------------------------------------------
     def useMsgpack(self):
         """使用msgpack作为序列化工具"""
         self.pack = self.__msgpackPack
         self.unpack = self.__msgpackUnpack
 
-    #----------------------------------------------------------------------
     def usePickle(self):
         """使用cPickle作为序列化工具"""
         self.pack = self.__picklePack
         self.unpack = self.__pickleUnpack
 
 
-########################################################################
 class RpcServer(RpcObject):
     """RPC服务器"""
 
-    #----------------------------------------------------------------------
     def __init__(self, repAddress, pubAddress):
         """Constructor"""
         super(RpcServer, self).__init__()
@@ -125,7 +110,6 @@ class RpcServer(RpcObject):
         self.__active = False                             # 服务器的工作状态
         self.__thread = threading.Thread(target=self.run) # 服务器的工作线程
 
-    #----------------------------------------------------------------------
     def start(self):
         """启动服务器"""
         # 将服务器设为启动
@@ -135,7 +119,6 @@ class RpcServer(RpcObject):
         if not self.__thread.isAlive():
             self.__thread.start()
 
-    #----------------------------------------------------------------------
     def stop(self, join=False):
         """停止服务器"""
         # 将服务器设为停止
@@ -145,7 +128,6 @@ class RpcServer(RpcObject):
         if join and self.__thread.isAlive():
             self.__thread.join()
 
-    #----------------------------------------------------------------------
     def run(self):
         """服务器运行函数"""
         while self.__active:
@@ -176,7 +158,6 @@ class RpcServer(RpcObject):
             # 通过请求响应socket返回调用结果
             self.__socketREP.send(repb)
 
-    #----------------------------------------------------------------------
     def publish(self, topic, data):
         """
         广播推送数据
@@ -189,17 +170,14 @@ class RpcServer(RpcObject):
         # 通过广播socket发送数据
         self.__socketPUB.send_multipart([topic, datab])
 
-    #----------------------------------------------------------------------
     def register(self, func):
         """注册函数"""
         self.__functions[func.__name__] = func
 
 
-########################################################################
 class RpcClient(RpcObject):
     """RPC客户端"""
 
-    #----------------------------------------------------------------------
     def __init__(self, reqAddress, subAddress):
         """Constructor"""
         super(RpcClient, self).__init__()
@@ -216,7 +194,6 @@ class RpcClient(RpcObject):
         self.__active = False                                   # 客户端的工作状态
         self.__thread = threading.Thread(target=self.run)       # 客户端的工作线程
 
-    #----------------------------------------------------------------------
     def __getattr__(self, name):
         """实现远程调用功能"""
         # 执行远程调用任务
@@ -242,7 +219,6 @@ class RpcClient(RpcObject):
 
         return dorpc
 
-    #----------------------------------------------------------------------
     def start(self):
         """启动客户端"""
         # 连接端口
@@ -256,7 +232,6 @@ class RpcClient(RpcObject):
         if not self.__thread.isAlive():
             self.__thread.start()
 
-    #----------------------------------------------------------------------
     def stop(self):
         """停止客户端"""
         # 将客户端设为停止
@@ -266,7 +241,6 @@ class RpcClient(RpcObject):
         if self.__thread.isAlive():
             self.__thread.join()
 
-    #----------------------------------------------------------------------
     def run(self):
         """客户端运行函数"""
         while self.__active:
@@ -283,12 +257,10 @@ class RpcClient(RpcObject):
             # 调用回调函数处理
             self.callback(topic, data)
 
-    #----------------------------------------------------------------------
     def callback(self, topic, data):
         """回调函数，必须由用户实现"""
         raise NotImplementedError
 
-    #----------------------------------------------------------------------
     def subscribeTopic(self, topic):
         """
         订阅特定主题的广播数据
@@ -300,16 +272,13 @@ class RpcClient(RpcObject):
         self.__socketSUB.setsockopt(zmq.SUBSCRIBE, topic)
 
 
-########################################################################
 class RemoteException(Exception):
     """RPC远程异常"""
 
-    #----------------------------------------------------------------------
     def __init__(self, value):
         """Constructor"""
         self.__value = value
 
-    #----------------------------------------------------------------------
     def __str__(self):
         """输出错误信息"""
         return self.__value

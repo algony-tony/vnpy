@@ -21,7 +21,6 @@ from vnpy.trader.app.ctaStrategy.ctaBase import EVENT_CTA_LOG
 
 
 
-#----------------------------------------------------------------------
 def processErrorEvent(event):
     """
     处理错误事件
@@ -30,7 +29,6 @@ def processErrorEvent(event):
     error = event.dict_['data']
     print(u'错误代码：%s，错误信息：%s' %(error.errorID, error.errorMsg))
     
-#----------------------------------------------------------------------
 def runChildProcess():
     """子进程运行函数"""
     print('-'*20)
@@ -76,7 +74,6 @@ def runChildProcess():
     while True:
         sleep(1)
 
-#----------------------------------------------------------------------
 def runParentProcess():
     """父进程运行函数"""
     # 创建日志引擎

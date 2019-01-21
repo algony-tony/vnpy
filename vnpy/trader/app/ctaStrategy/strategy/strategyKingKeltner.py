@@ -16,7 +16,6 @@ from vnpy.trader.app.ctaStrategy.ctaTemplate import (CtaTemplate,
                                                      ArrayManager)
 
 
-########################################################################
 class KkStrategy(CtaTemplate):
     """基于King Keltner通道的交易策略"""
     className = 'KkStrategy'
@@ -59,7 +58,6 @@ class KkStrategy(CtaTemplate):
                 'intraTradeHigh',
                 'intraTradeLow']    
 
-    #----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):
         """Constructor"""
         super(KkStrategy, self).__init__(ctaEngine, setting)
@@ -71,7 +69,6 @@ class KkStrategy(CtaTemplate):
         self.shortOrderIDList = []
         self.orderList = []
         
-    #----------------------------------------------------------------------
     def onInit(self):
         """初始化策略（必须由用户继承实现）"""
         self.writeCtaLog(u'%s策略初始化' %self.name)
@@ -83,29 +80,24 @@ class KkStrategy(CtaTemplate):
 
         self.putEvent()
 
-    #----------------------------------------------------------------------
     def onStart(self):
         """启动策略（必须由用户继承实现）"""
         self.writeCtaLog(u'%s策略启动' %self.name)
         self.putEvent()
 
-    #----------------------------------------------------------------------
     def onStop(self):
         """停止策略（必须由用户继承实现）"""
         self.writeCtaLog(u'%s策略停止' %self.name)
         self.putEvent()
 
-    #----------------------------------------------------------------------
     def onTick(self, tick):
         """收到行情TICK推送（必须由用户继承实现）""" 
         self.bg.updateTick(tick)
 
-    #----------------------------------------------------------------------
     def onBar(self, bar):
         """收到Bar推送（必须由用户继承实现）"""
         self.bg.updateBar(bar)
     
-    #----------------------------------------------------------------------
     def onFiveBar(self, bar):
         """收到5分钟K线"""
         # 撤销之前发出的尚未成交的委托（包括限价单和停止单）
@@ -154,12 +146,10 @@ class KkStrategy(CtaTemplate):
         # 发出状态更新事件
         self.putEvent()        
 
-    #----------------------------------------------------------------------
     def onOrder(self, order):
         """收到委托变化推送（必须由用户继承实现）"""
         pass
 
-    #----------------------------------------------------------------------
     def onTrade(self, trade):
         if self.pos != 0:
             # 多头开仓成交后，撤消空头委托
@@ -179,7 +169,6 @@ class KkStrategy(CtaTemplate):
         # 发出状态更新事件
         self.putEvent()
         
-    #----------------------------------------------------------------------
     def sendOcoOrder(self, buyPrice, shortPrice, volume):
         """
         发送OCO委托
@@ -197,7 +186,6 @@ class KkStrategy(CtaTemplate):
         self.orderList.extend(self.buyOrderIDList)
         self.orderList.extend(self.shortOrderIDList)
 
-    #----------------------------------------------------------------------
     def onStopOrder(self, so):
         """停止单推送"""
         pass

@@ -10,7 +10,6 @@ from vnpy.trader.vtUtility import BarGenerator, ArrayManager
 from .ctaBase import *
 
 
-########################################################################
 class CtaTemplate(object):
     """CTA策略模板"""
     
@@ -47,7 +46,6 @@ class CtaTemplate(object):
     # 同步列表，保存了需要保存到数据库的变量名称
     syncList = ['pos']
 
-    #----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):
         """Constructor"""
         self.ctaEngine = ctaEngine
@@ -59,67 +57,54 @@ class CtaTemplate(object):
                 if key in setting:
                     d[key] = setting[key]
     
-    #----------------------------------------------------------------------
     def onInit(self):
         """初始化策略（必须由用户继承实现）"""
         raise NotImplementedError
     
-    #----------------------------------------------------------------------
     def onStart(self):
         """启动策略（必须由用户继承实现）"""
         raise NotImplementedError
     
-    #----------------------------------------------------------------------
     def onStop(self):
         """停止策略（必须由用户继承实现）"""
         raise NotImplementedError
 
-    #----------------------------------------------------------------------
     def onTick(self, tick):
         """收到行情TICK推送（必须由用户继承实现）"""
         raise NotImplementedError
 
-    #----------------------------------------------------------------------
     def onOrder(self, order):
         """收到委托变化推送（必须由用户继承实现）"""
         raise NotImplementedError
     
-    #----------------------------------------------------------------------
     def onTrade(self, trade):
         """收到成交推送（必须由用户继承实现）"""
         raise NotImplementedError
     
-    #----------------------------------------------------------------------
     def onBar(self, bar):
         """收到Bar推送（必须由用户继承实现）"""
         raise NotImplementedError
     
-    #----------------------------------------------------------------------
     def onStopOrder(self, so):
         """收到停止单推送（必须由用户继承实现）"""
         raise NotImplementedError
     
-    #----------------------------------------------------------------------
     def buy(self, price, volume, stop=False):
         """买开"""
         return self.sendOrder(CTAORDER_BUY, price, volume, stop)
     
-    #----------------------------------------------------------------------
     def sell(self, price, volume, stop=False):
         """卖平"""
         return self.sendOrder(CTAORDER_SELL, price, volume, stop)       
 
-    #----------------------------------------------------------------------
     def short(self, price, volume, stop=False):
         """卖开"""
         return self.sendOrder(CTAORDER_SHORT, price, volume, stop)          
  
-    #----------------------------------------------------------------------
     def cover(self, price, volume, stop=False):
         """买平"""
         return self.sendOrder(CTAORDER_COVER, price, volume, stop)
         
-    #----------------------------------------------------------------------
     def sendOrder(self, orderType, price, volume, stop=False):
         """发送委托"""
         if self.trading:
@@ -133,7 +118,6 @@ class CtaTemplate(object):
             # 交易停止时发单返回空字符串
             return []
         
-    #----------------------------------------------------------------------
     def cancelOrder(self, vtOrderID):
         """撤单"""
         # 如果发单号为空字符串，则不进行后续操作
@@ -145,60 +129,49 @@ class CtaTemplate(object):
         else:
             self.ctaEngine.cancelOrder(vtOrderID)
             
-    #----------------------------------------------------------------------
     def cancelAll(self):
         """全部撤单"""
         self.ctaEngine.cancelAll(self.name)
     
-    #----------------------------------------------------------------------
     def insertTick(self, tick):
         """向数据库中插入tick数据"""
         self.ctaEngine.insertData(self.tickDbName, self.vtSymbol, tick)
     
-    #----------------------------------------------------------------------
     def insertBar(self, bar):
         """向数据库中插入bar数据"""
         self.ctaEngine.insertData(self.barDbName, self.vtSymbol, bar)
         
-    #----------------------------------------------------------------------
     def loadTick(self, days):
         """读取tick数据"""
         return self.ctaEngine.loadTick(self.tickDbName, self.vtSymbol, days)
     
-    #----------------------------------------------------------------------
     def loadBar(self, days):
         """读取bar数据"""
         return self.ctaEngine.loadBar(self.barDbName, self.vtSymbol, days)
     
-    #----------------------------------------------------------------------
     def writeCtaLog(self, content):
         """记录CTA日志"""
         content = self.name + ':' + content
         self.ctaEngine.writeCtaLog(content)
         
-    #----------------------------------------------------------------------
     def putEvent(self):
         """发出策略状态变化事件"""
         self.ctaEngine.putStrategyEvent(self.name)
         
-    #----------------------------------------------------------------------
     def getEngineType(self):
         """查询当前运行的环境"""
         return self.ctaEngine.engineType
     
-    #----------------------------------------------------------------------
     def saveSyncData(self):
         """保存同步数据到数据库"""
         if self.trading:
             self.ctaEngine.saveSyncData(self)
     
-    #----------------------------------------------------------------------
     def getPriceTick(self):
         """查询最小价格变动"""
         return self.ctaEngine.getPriceTick(self)
         
 
-########################################################################
 class TargetPosTemplate(CtaTemplate):
     """
     允许直接通过修改目标持仓来实现交易的策略模板
@@ -234,12 +207,10 @@ class TargetPosTemplate(CtaTemplate):
                'pos',
                'targetPos']
 
-    #----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):
         """Constructor"""
         super(TargetPosTemplate, self).__init__(ctaEngine, setting)
         
-    #----------------------------------------------------------------------
     def onTick(self, tick):
         """收到行情推送"""
         self.lastTick = tick
@@ -248,26 +219,22 @@ class TargetPosTemplate(CtaTemplate):
         if self.trading:
             self.trade()
         
-    #----------------------------------------------------------------------
     def onBar(self, bar):
         """收到K线推送"""
         self.lastBar = bar
     
-    #----------------------------------------------------------------------
     def onOrder(self, order):
         """收到委托推送"""
         if order.status == STATUS_ALLTRADED or order.status == STATUS_CANCELLED:
             if order.vtOrderID in self.orderList:
                 self.orderList.remove(order.vtOrderID)
     
-    #----------------------------------------------------------------------
     def setTargetPos(self, targetPos):
         """设置目标仓位"""
         self.targetPos = targetPos
         
         self.trade()
         
-    #----------------------------------------------------------------------
     def trade(self):
         """执行交易"""
         # 先撤销之前的委托
@@ -337,33 +304,27 @@ class TargetPosTemplate(CtaTemplate):
             self.orderList.extend(l)
     
 
-########################################################################
 class CtaSignal(object):
     """
     CTA策略信号，负责纯粹的信号生成（目标仓位），不参与具体交易管理
     """
 
-    #----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
         self.signalPos = 0      # 信号仓位
     
-    #----------------------------------------------------------------------
     def onBar(self, bar):
         """K线推送"""
         pass
     
-    #----------------------------------------------------------------------
     def onTick(self, tick):
         """Tick推送"""
         pass
         
-    #----------------------------------------------------------------------
     def setSignalPos(self, pos):
         """设置信号仓位"""
         self.signalPos = pos
         
-    #----------------------------------------------------------------------
     def getSignalPos(self):
         """获取信号仓位"""
         return self.signalPos
