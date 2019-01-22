@@ -65,3 +65,5 @@ dist
 *.egg
 *.egg-info
 
+tags
+Session.vim
