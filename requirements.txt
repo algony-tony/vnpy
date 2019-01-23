@@ -1,4 +1,4 @@
-pymongo 
+pymongo
 websocket-client
 msgpack-python
 qdarkstyle
