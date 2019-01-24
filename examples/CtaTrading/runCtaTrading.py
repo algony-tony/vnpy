@@ -31,11 +31,11 @@ def processErrorEvent(event):
 
 def runChildProcess():
     """子进程运行函数"""
-    print('-'*20)
+    print("--- runChildProcess ---")
 
     # 创建日志引擎
     le = LogEngine()
-    le.setLogLevel(le.LEVEL_INFO)
+    le.setLogLevel(le.LEVEL_DEBUG)
     le.addConsoleHandler()
     le.addFileHandler()
 
