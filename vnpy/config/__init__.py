@@ -10,3 +10,8 @@ vtconfig.read(os.path.join(
 
 globalSetting = vtconfig['default']
 
+
+gatewayconfig = configparser.ConfigParser()
+gatewayconfig.read(os.path.join(
+    os.path.abspath(os.path.dirname(__file__)),
+    'gateway.ini'))
