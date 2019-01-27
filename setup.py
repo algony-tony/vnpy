@@ -26,8 +26,8 @@ import vnpy
 
 setup(
     name='vnpy',
-    version=vnpy.__version__,
-    author=vnpy.__author__,
+    version='2.0.0',
+    author='Xiaoyou Chen',
     author_email='vn.py@foxmail.com',
     license='MIT',
     url='http://www.vnpy.org',
@@ -39,8 +39,8 @@ setup(
                  'Operating System :: Microsoft :: Windows :: Windows 8',
                  'Operating System :: Microsoft :: Windows :: Windows 10',
                  'Operating System :: Microsoft :: Windows :: Windows Server 2008',
-                 'Programming Language :: Python :: 2',
-                 'Programming Language :: Python :: 2.7',
+                 'Programming Language :: Python :: 3',
+                 'Programming Language :: Python :: 3.6',
                  'Topic :: Office/Business :: Financial :: Investment',
                  'Programming Language :: Python :: Implementation :: CPython',
                  'License :: OSI Approved :: MIT License'],
