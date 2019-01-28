@@ -15,9 +15,8 @@ from pymongo.errors import ConnectionFailure
 from vnpy.event import Event
 from vnpy.config import globalSetting
 from vnpy.vtEvent import *
-from vnpy.vtGateway import *
-from vnpy.language import text
 from vnpy.vtFunction import getTempPath
+from vnpy.base_class import Singleton
 
 
 class DataEngine(object):
@@ -25,7 +24,7 @@ class DataEngine(object):
     contractFileName = 'ContractData.vt'
     contractFilePath = getTempPath(contractFileName)
 
-    FINISHED_STATUS = [STATUS_ALLTRADED, STATUS_REJECTED, STATUS_CANCELLED]
+    FINISHED_STATUS = ['全部成交', '拒单', '已撤销']
 
     def __init__(self, eventEngine):
         """Constructor"""
@@ -244,7 +243,7 @@ class LogEngine(object):
     """日志引擎"""
 
     # 单例模式
-    __metaclass__ = VtSingleton
+    __metaclass__ = Singleton
 
     # 日志级别
     LEVEL_DEBUG = logging.DEBUG
@@ -333,7 +332,7 @@ class LogEngine(object):
 
 class PositionDetail(object):
     """本地维护的持仓信息"""
-    WORKING_STATUS = [STATUS_UNKNOWN, STATUS_NOTTRADED, STATUS_PARTTRADED]
+    WORKING_STATUS = [ '未知',  '未成交',  '部分成交']
 
     MODE_NORMAL = 'normal'          # 普通模式
     MODE_SHFE = 'shfe'              # 上期所今昨分别平仓
@@ -473,7 +472,7 @@ class PositionDetail(object):
         order.offset = req.offset
         order.direction = req.direction
         order.totalVolume = req.volume
-        order.status = STATUS_UNKNOWN
+        order.status =  '未知'
 
         # 缓存到字典中
         self.workingOrderDict[vtOrderID] = order

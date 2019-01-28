@@ -13,10 +13,11 @@ import json
 from copy import copy
 from datetime import datetime, timedelta
 
-from vnpy.gateway.ctp import MdApi, TdApi, defineDict
+from vnpy.config import gatewayconfig, globalSetting
 from vnpy.gateway.base_gateway import BaseGateway
-from vnpy.vtFunction import getJsonPath, getTempPath
-from vnpy.config import gatewayconfig
+from vnpy.gateway.ctp.vnctpmd import MdApi
+from vnpy.gateway.ctp.vnctptd import TdApi
+from vnpy.gateway.ctp.ctp_data_type import defineDict
 
 
 # 以下为一些VT类型和CTP类型的映射字典
@@ -82,8 +83,9 @@ symbolExchangeDict = {}
 # 夜盘交易时间段分隔判断
 NIGHT_TRADING = datetime(1900, 1, 1, 20).time()
 
+tempdir = globalSetting['tempDir']
 
-class CtpGateway(BaseGateway):
+class ctpGateway(BaseGateway):
     """CTP接口"""
 
     def __init__(self, eventEngine, gatewayName='CTP'):
@@ -387,7 +389,7 @@ class CtpMdApi(MdApi):
         # 如果尚未建立服务器连接，则进行连接
         if not self.connectionStatus:
             # 创建C++环境中的API对象，这里传入的参数是需要用来保存.con文件的文件夹路径
-            path = getTempPath(self.gatewayName + '_')
+            path = os.path.join(tempdir, self.gatewayName + '_')
             self.createFtdcMdApi(path)
 
             # 注册服务器地址
@@ -1221,7 +1223,7 @@ class CtpTdApi(TdApi):
         # 如果尚未建立服务器连接，则进行连接
         if not self.connectionStatus:
             # 创建C++环境中的API对象，这里传入的参数是需要用来保存.con文件的文件夹路径
-            path = getTempPath(self.gatewayName + '_')
+            path = os.path.join(tempdir, self.gatewayName + '_')
             self.createFtdcTraderApi(path)
 
             # 设置数据同步模式为推送从今日开始所有数据

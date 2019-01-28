@@ -5,7 +5,7 @@ import time
 from vnpy.event import *
 from vnpy.vtEvent import *
 from vnpy.vtConstant import *
-from vnpy.vtObject import *
+from vnpy.base_class import *
 
 
 class BaseGateway(object):

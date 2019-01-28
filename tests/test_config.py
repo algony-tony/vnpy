@@ -2,7 +2,7 @@
 if __name__ == '__main__':
     from vnpy.config import *
 
-    print(globalSetting.sections())
     print(vtconfig.sections())
-    print(globalSetting['default'])
-    print(globalSetting['default']['fontFamily'])
+    print(vtconfig['default'])
+    print(vtconfig['default']['fontFamily'])
+    print(globalSetting['tempDir'])

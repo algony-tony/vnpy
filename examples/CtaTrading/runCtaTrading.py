@@ -13,11 +13,12 @@ from time import sleep
 from datetime import datetime, time
 
 from vnpy.event import EventEngine2
-from vnpy.trader.vtEvent import EVENT_LOG, EVENT_ERROR
-from vnpy.trader.vtEngine import MainEngine, LogEngine
-from vnpy.trader.gateway import ctpGateway
-from vnpy.trader.app import ctaStrategy
-from vnpy.trader.app.ctaStrategy.ctaBase import EVENT_CTA_LOG
+from vnpy.vtEvent import EVENT_LOG, EVENT_ERROR
+from vnpy.vtEngine import LogEngine
+from vnpy.bin.mainEngine import MainEngine
+from vnpy.gateway.ctp import ctpGateway
+from vnpy.app import ctaStrategy
+from vnpy.app.ctaStrategy.ctaBase import EVENT_CTA_LOG
 
 
 
