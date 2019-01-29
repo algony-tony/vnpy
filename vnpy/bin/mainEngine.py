@@ -16,6 +16,7 @@ from vnpy.event import Event
 from vnpy.config import globalSetting
 from vnpy.vtEvent import *
 from vnpy.language import text
+from vnpy.vtEngine import DataEngine, LogEngine
 
 
 class MainEngine(object):

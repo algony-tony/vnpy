@@ -5,7 +5,6 @@
 '''
 
 # CTA引擎中涉及的数据类定义
-from vnpy.trader.vtConstant import EMPTY_UNICODE, EMPTY_STRING, EMPTY_FLOAT, EMPTY_INT
 
 # 常量定义
 # CTA引擎中涉及到的交易方向类型
@@ -44,13 +43,13 @@ class StopOrder(object):
 
     def __init__(self):
         """Constructor"""
-        self.vtSymbol = EMPTY_STRING
-        self.orderType = EMPTY_UNICODE
-        self.direction = EMPTY_UNICODE
-        self.offset = EMPTY_UNICODE
-        self.price = EMPTY_FLOAT
-        self.volume = EMPTY_INT
+        self.vtSymbol = ''
+        self.orderType = ''
+        self.direction = ''
+        self.offset = ''
+        self.price = 0.0
+        self.volume = 0
 
         self.strategy = None             # 下停止单的策略对象
-        self.stopOrderID = EMPTY_STRING  # 停止单的本地编号
-        self.status = EMPTY_STRING       # 停止单状态
+        self.stopOrderID = ''  # 停止单的本地编号
+        self.status = ''       # 停止单状态

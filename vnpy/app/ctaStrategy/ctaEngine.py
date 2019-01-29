@@ -14,13 +14,13 @@ from datetime import datetime, timedelta
 from copy import copy
 
 from vnpy.event import Event
-from vnpy.trader.vtEvent import *
-from vnpy.trader.vtConstant import *
-from vnpy.trader.vtObject import VtTickData, VtBarData
-from vnpy.trader.vtGateway import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, VtLogData
-from vnpy.trader.vtFunction import todayDate, getJsonPath
-from vnpy.trader.app import AppEngine
-from vnpy.trader.vtGlobal import globalSetting
+from vnpy.vtEvent import *
+from vnpy.vtConstant import *
+from vnpy.base_class import TickData, BarData
+from vnpy.base_class import SubscribeReq, OrderReq, CancelOrderReq, LogData
+from vnpy.vtFunction import todayDate, getJsonPath
+from vnpy.app import AppEngine
+from vnpy.config import globalSetting
 
 from .ctaBase import *
 from .strategy import STRATEGY_CLASS
@@ -92,7 +92,7 @@ class CtaEngine(AppEngine):
         """发单"""
         contract = self.mainEngine.getContract(vtSymbol)
 
-        req = VtOrderReq()
+        req = OrderReq()
         req.symbol = contract.symbol
         req.exchange = contract.exchange
         req.vtSymbol = contract.vtSymbol
@@ -150,7 +150,7 @@ class CtaEngine(AppEngine):
             # 检查是否报单还有效，只有有效时才发出撤单指令
             orderFinished = (order.status==STATUS_ALLTRADED or order.status==STATUS_CANCELLED)
             if not orderFinished:
-                req = VtCancelOrderReq()
+                req = CancelOrderReq()
                 req.symbol = order.symbol
                 req.exchange = order.exchange
                 req.frontID = order.frontID
@@ -335,7 +335,7 @@ class CtaEngine(AppEngine):
         self.eventEngine.register(EVENT_TRADE, self.processTradeEvent)
 
     def insertData(self, dbName, collectionName, data):
-        """插入数据到数据库（这里的data可以是VtTickData或者VtBarData）"""
+        """插入数据到数据库（这里的data可以是TickData或者BarData）"""
         self.mainEngine.dbInsert(dbName, collectionName, data.__dict__)
 
     def loadBar(self, dbName, collectionName, days):
@@ -353,7 +353,7 @@ class CtaEngine(AppEngine):
 
         l = []
         for d in barData:
-            bar = VtBarData()
+            bar = BarData()
             bar.__dict__ = d
             l.append(bar)
         return l
@@ -367,14 +367,14 @@ class CtaEngine(AppEngine):
 
         l = []
         for d in tickData:
-            tick = VtTickData()
+            tick = TickData()
             tick.__dict__ = d
             l.append(tick)
         return l
 
     def writeCtaLog(self, content):
         """快速发出CTA模块日志事件"""
-        log = VtLogData()
+        log = LogData()
         log.logContent = content
         log.gatewayName = 'CTA_STRATEGY'
         event = Event(type_=EVENT_CTA_LOG)
@@ -421,7 +421,7 @@ class CtaEngine(AppEngine):
         # 订阅合约
         contract = self.mainEngine.getContract(strategy.vtSymbol)
         if contract:
-            req = VtSubscribeReq()
+            req = SubscribeReq()
             req.symbol = contract.symbol
             req.exchange = contract.exchange
 
@@ -683,7 +683,7 @@ class CtaEngine(AppEngine):
         l = []
 
         for ix, row in df.iterrows():
-            bar = VtBarData()
+            bar = BarData()
             bar.symbol = symbol
             bar.vtSymbol = symbol
             bar.open = row['open']

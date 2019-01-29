@@ -4,7 +4,7 @@
 from vnpy.gateway.ctp.ctp_gateway import ctpGateway
 
 
-gatewayClass = CtpGateway
+gatewayClass = ctpGateway
 gatewayName = 'CTP'
 gatewayDisplayName = 'CTP'
 gatewayType = 'futures'

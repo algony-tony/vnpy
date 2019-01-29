@@ -19,6 +19,7 @@ from vnpy.gateway.ctp.vnctpmd import MdApi
 from vnpy.gateway.ctp.vnctptd import TdApi
 from vnpy.gateway.ctp.ctp_data_type import defineDict
 from vnpy.utility.file import getTempPath
+from vnpy.vtConstant import *
 
 
 # 以下为一些VT类型和CTP类型的映射字典

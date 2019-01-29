@@ -9,9 +9,8 @@
 
 from __future__ import division
 
-from vnpy.trader.vtObject import VtBarData
-from vnpy.trader.vtConstant import EMPTY_STRING
-from vnpy.trader.app.ctaStrategy.ctaTemplate import (CtaTemplate,
+from vnpy.base_class import BarData
+from vnpy.app.ctaStrategy.ctaTemplate import (CtaTemplate,
                                                      BarGenerator,
                                                      ArrayManager)
 
