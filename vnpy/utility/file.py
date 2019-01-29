@@ -60,10 +60,7 @@ def loadIconPath(iconName):
 
 def getTempPath(name):
     """获取存放临时文件的路径"""
-    tempPath = os.path.join(os.getcwd(), 'temp')
-    if not os.path.exists(tempPath):
-        os.makedirs(tempPath)
-
+    tempPath = globalSetting['tempDir']
     path = os.path.join(tempPath, name)
     return path
 

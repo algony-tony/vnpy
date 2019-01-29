@@ -12,6 +12,7 @@ from datetime import datetime
 from math import isnan
 
 from six import text_type
+from vnpy.config import globalSetting
 
 
 def safeUnicode(value):
@@ -33,27 +34,6 @@ def safeUnicode(value):
 def todayDate():
     """获取当前本机电脑时间的日期"""
     return datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-
-
-# 图标路径
-iconPathDict = {}
-
-path = os.path.abspath(os.path.dirname(__file__))   # 遍历vnpy安装目录
-for root, subdirs, files in os.walk(path):
-    for fileName in files:
-        if '.ico' in fileName:
-            iconPathDict[fileName] = os.path.join(root, fileName)
-
-path = os.getcwd()      # 遍历工作目录
-for root, subdirs, files in os.walk(path):
-    for fileName in files:
-        if '.ico' in fileName:
-            iconPathDict[fileName] = os.path.join(root, fileName)
-
-def loadIconPath(iconName):
-    """加载程序图标路径"""
-    global iconPathDict
-    return iconPathDict.get(iconName, '')
 
 
 def getTempPath(name):
@@ -87,27 +67,8 @@ def getJsonPath(name, moduleFile):
     return moduleJsonPath
 
 
-# 加载全局配置
-def loadJsonSetting(settingFileName):
-    """加载JSON配置"""
-    settingFilePath = getJsonPath(settingFileName, __file__)
-
-    setting = {}
-
-    try:
-        with open(settingFilePath, 'rb') as f:
-            setting = f.read()
-            if type(setting) is not str:
-                setting = str(setting, encoding='utf8')
-            setting = json.loads(setting)
-    except:
-        traceback.print_exc()
-
-    return setting
-
-
 # 函数常量
 MAX_NUMBER = 10000000000000
-
-globalSetting = loadJsonSetting('VT_setting.json')
 MAX_DECIMAL = globalSetting.get('maxDecimal', 4)
+
+
