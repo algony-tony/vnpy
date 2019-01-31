@@ -71,3 +71,4 @@ Session.vim
 examples/CtaTrading/CTA_setting.json
 examples/CtaTrading/CTP_connect.json
 examples/CtaTrading/VT_setting.json
+vnpy/config/gateway.ini
