@@ -15,9 +15,9 @@ from datetime import datetime, timedelta
 
 from vnpy.config import gatewayconfig
 from vnpy.gateway.base_gateway import BaseGateway
-from vnpy.gateway.ctp.vnctpmd import MdApi
-from vnpy.gateway.ctp.vnctptd import TdApi
-from vnpy.gateway.ctp.ctp_data_type import defineDict
+from vnpy.gateway.ctpGateway.vnctpmd import MdApi
+from vnpy.gateway.ctpGateway.vnctptd import TdApi
+from vnpy.gateway.ctpGateway.ctp_data_type import defineDict
 from vnpy.utility.file import getTempPath
 from vnpy.vtConstant import *
 
@@ -91,7 +91,7 @@ class ctpGateway(BaseGateway):
 
     def __init__(self, eventEngine, gatewayName='CTP'):
         """Constructor"""
-        super(CtpGateway, self).__init__(eventEngine, gatewayName)
+        super(ctpGateway, self).__init__(eventEngine, gatewayName)
 
         self.mdApi = CtpMdApi(self)     # 行情API
         self.tdApi = CtpTdApi(self)     # 交易API

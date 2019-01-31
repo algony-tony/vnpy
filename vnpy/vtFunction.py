@@ -36,14 +36,14 @@ def todayDate():
     return datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
 
 
-def getTempPath(name):
-    """获取存放临时文件的路径"""
-    tempPath = os.path.join(os.getcwd(), 'temp')
-    if not os.path.exists(tempPath):
-        os.makedirs(tempPath)
-
-    path = os.path.join(tempPath, name)
-    return path
+# def getTempPath(name):
+#     """获取存放临时文件的路径"""
+#     tempPath = os.path.join(os.getcwd(), 'temp')
+#     if not os.path.exists(tempPath):
+#         os.makedirs(tempPath)
+#
+#     path = os.path.join(tempPath, name)
+#     return path
 
 
 # JSON配置文件路径

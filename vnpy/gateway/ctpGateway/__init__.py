@@ -1,7 +1,7 @@
 # encoding: UTF-8
 
 
-from vnpy.gateway.ctp.ctp_gateway import ctpGateway
+from vnpy.gateway.ctpGateway.ctp_gateway import ctpGateway
 
 
 gatewayClass = ctpGateway

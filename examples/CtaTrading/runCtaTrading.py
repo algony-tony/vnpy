@@ -16,7 +16,7 @@ from vnpy.event import EventEngine2
 from vnpy.vtEvent import EVENT_LOG, EVENT_ERROR
 from vnpy.vtEngine import LogEngine
 from vnpy.bin.mainEngine import MainEngine
-from vnpy.gateway.ctp import ctpGateway
+from vnpy.gateway import ctpGateway
 from vnpy.app import ctaStrategy
 from vnpy.app.ctaStrategy.ctaBase import EVENT_CTA_LOG
 

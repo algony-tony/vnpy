@@ -4,7 +4,7 @@
 import numpy as np
 import talib
 
-from vnpy.vtObject import VtBarData
+from vnpy.base_class import BarData
 
 
 class BarGenerator(object):
@@ -31,7 +31,7 @@ class BarGenerator(object):
 
         # 尚未创建对象
         if not self.bar:
-            self.bar = VtBarData()
+            self.bar = BarData()
             newMinute = True
         # 新的一分钟
         elif self.bar.datetime.minute != tick.datetime.minute:
@@ -44,7 +44,7 @@ class BarGenerator(object):
             self.onBar(self.bar)
 
             # 创建新的K线对象
-            self.bar = VtBarData()
+            self.bar = BarData()
             newMinute = True
 
         # 初始化新一分钟的K线数据
@@ -77,7 +77,7 @@ class BarGenerator(object):
         """1分钟K线更新"""
         # 尚未创建对象
         if not self.xminBar:
-            self.xminBar = VtBarData()
+            self.xminBar = BarData()
 
             self.xminBar.vtSymbol = bar.vtSymbol
             self.xminBar.symbol = bar.symbol
