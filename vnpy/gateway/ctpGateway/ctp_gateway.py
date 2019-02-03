@@ -13,13 +13,14 @@ import json
 from copy import copy
 from datetime import datetime, timedelta
 
+from vnpy.event import *
+from vnpy.vtConstant import *
 from vnpy.config import gatewayconfig
+from vnpy.utility.file import getTempPath
 from vnpy.gateway.base_gateway import BaseGateway
 from vnpy.gateway.ctpGateway.vnctpmd import MdApi
 from vnpy.gateway.ctpGateway.vnctptd import TdApi
 from vnpy.gateway.ctpGateway.ctp_data_type import defineDict
-from vnpy.utility.file import getTempPath
-from vnpy.vtConstant import *
 
 
 # 以下为一些VT类型和CTP类型的映射字典

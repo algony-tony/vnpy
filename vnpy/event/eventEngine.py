@@ -10,9 +10,8 @@ from collections import defaultdict
 # 第三方模块
 from qtpy.QtCore import QTimer
 
-# 自己开发的模块
-from .eventType import *
-
+# 计时器事件，每隔1秒发送一次
+EVENT_TIMER = 'eTimer'
 
 class EventEngine(object):
     """

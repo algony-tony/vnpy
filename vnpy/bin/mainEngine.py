@@ -17,6 +17,7 @@ from vnpy.config import globalSetting
 from vnpy.vtEvent import *
 from vnpy.language import text
 from vnpy.vtEngine import DataEngine, LogEngine
+from vnpy.base_class import LogData
 
 
 class MainEngine(object):
@@ -169,7 +170,7 @@ class MainEngine(object):
 
     def writeLog(self, content):
         """快速发出日志事件"""
-        log = VtLogData()
+        log = LogData()
         log.logContent = content
         log.gatewayName = 'MAIN_ENGINE'
         event = Event(type_=EVENT_LOG)
@@ -182,7 +183,7 @@ class MainEngine(object):
             # 读取MongoDB的设置
             try:
                 # 设置MongoDB操作的超时时间为0.5秒
-                self.dbClient = MongoClient(globalSetting['mongoHost'], globalSetting['mongoPort'], serverSelectionTimeoutMS=10)
+                self.dbClient = MongoClient(globalSetting['mongoHost'], int(globalSetting['mongoPort']), serverSelectionTimeoutMS=10)
 
                 # 调用server_info查询服务器状态，防止服务器异常并未连接成功
                 self.dbClient.server_info()
@@ -251,7 +252,7 @@ class MainEngine(object):
             'time': log.logTime,
             'gateway': log.gatewayName
         }
-        self.dbInsert(LOG_DB_NAME, self.todayDate, d)
+        self.dbInsert(globalSetting['mongoLogDBName'], self.todayDate, d)
 
     def getTick(self, vtSymbol):
         """查询行情"""

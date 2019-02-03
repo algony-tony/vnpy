@@ -4,7 +4,6 @@
 本文件基于vnpy.event.eventType，并添加更多字段
 '''
 
-from vnpy.event.eventType import *
 
 # 系统相关
 EVENT_TIMER = 'eTimer'                  # 计时器事件，每隔1秒发送一次

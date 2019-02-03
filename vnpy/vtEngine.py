@@ -239,11 +239,11 @@ class DataEngine(object):
         return self.errorList
 
 
-class LogEngine(object):
+class LogEngine(object, metaclass=Singleton):
     """日志引擎"""
 
-    # 单例模式
-    __metaclass__ = Singleton
+    # 单例模式 py2 写法
+    # __metaclass__ = Singleton
 
     # 日志级别
     LEVEL_DEBUG = logging.DEBUG
@@ -280,7 +280,6 @@ class LogEngine(object):
         self.level = level
 
     def addConsoleHandler(self):
-        """添加终端输出"""
         if not self.consoleHandler:
             self.consoleHandler = logging.StreamHandler()
             self.consoleHandler.setLevel(self.level)
@@ -288,10 +287,9 @@ class LogEngine(object):
             self.logger.addHandler(self.consoleHandler)
 
     def addFileHandler(self, filename=''):
-        """添加文件输出"""
         if not self.fileHandler:
             if not filename:
-                filename = 'vt_' + datetime.now().strftime('%Y%m%d') + '.log'
+                filename = 'vt_' + datetime.now().strftime('%Y%m%d%H%M%S') + '.log'
             filepath = getTempPath(filename)
             self.fileHandler = logging.FileHandler(filepath, mode='w', encoding='utf-8')
             self.fileHandler.setLevel(self.level)
@@ -299,33 +297,28 @@ class LogEngine(object):
             self.logger.addHandler(self.fileHandler)
 
     def debug(self, msg):
-        """开发时用"""
         self.logger.debug(msg)
 
     def info(self, msg):
-        """正常输出"""
         self.logger.info(msg)
 
     def warn(self, msg):
-        """警告信息"""
         self.logger.warn(msg)
 
     def error(self, msg):
-        """报错输出"""
         self.logger.error(msg)
 
     def exception(self, msg):
-        """报错输出+记录异常信息"""
         self.logger.exception(msg)
 
     def critical(self, msg):
-        """影响程序运行的严重错误"""
         self.logger.critical(msg)
 
     def processLogEvent(self, event):
         """处理日志事件"""
         log = event.dict_['data']
-        function = self.levelFunctionDict[log.logLevel]     # 获取日志级别对应的处理函数
+        # 获取日志级别对应的处理函数
+        function = self.levelFunctionDict[log.logLevel]
         msg = '\t'.join([log.gatewayName, log.logContent])
         function(msg)
 
