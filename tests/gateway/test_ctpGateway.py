@@ -31,10 +31,10 @@ class test_ctpGateway(unittest.TestCase):
         le.addConsoleHandler()
         le.addFileHandler()
 
-        le.info(u'启动CTA策略运行子进程')
+        le.debug('run test_runChildProcess')
 
         ee = EventEngine2()
-        le.info(u'事件引擎创建成功')
+        le.debug('EventEngine2 completed')
 
         me = MainEngine(ee)
         me.addGateway(ctpGateway)
