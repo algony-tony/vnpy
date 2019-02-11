@@ -36,18 +36,18 @@ class test_ctpGateway(unittest.TestCase):
         ee = EventEngine2()
         le.debug('EventEngine2 completed')
 
-        me = MainEngine(ee)
-        me.addGateway(ctpGateway)
-        me.addApp(ctaStrategy)
-        le.info(u'主引擎创建成功')
-
         ee.register(EVENT_LOG, le.processLogEvent)
         ee.register(EVENT_CTA_LOG, le.processLogEvent)
         ee.register(EVENT_ERROR, processErrorEvent)
-        le.info(u'注册日志事件监听')
+        le.info('注册日志事件监听')
+
+        me = MainEngine(ee)
+        me.addGateway(ctpGateway)
+        me.addApp(ctaStrategy)
+        le.info('主引擎创建成功')
 
         me.connect('CTP')
-        le.info(u'连接CTP接口')
+        le.info('连接CTP接口')
 
         sleep(10)                       # 等待CTP接口初始化
         me.dataEngine.saveContracts()   # 保存合约信息到文件

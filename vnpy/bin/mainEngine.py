@@ -56,15 +56,12 @@ class MainEngine(object):
         """添加底层接口"""
         gatewayName = gatewayModule.gatewayName
 
-        # 创建接口实例
-        self.gatewayDict[gatewayName] = gatewayModule.gatewayClass(self.eventEngine,
-                                                                   gatewayName)
+        self.gatewayDict[gatewayName] = \
+                gatewayModule.gatewayClass(self.eventEngine, gatewayName)
 
-        # 设置接口轮询
         if gatewayModule.gatewayQryEnabled:
             self.gatewayDict[gatewayName].setQryEnabled(gatewayModule.gatewayQryEnabled)
 
-        # 保存接口详细信息
         d = {
             'gatewayName': gatewayModule.gatewayName,
             'gatewayDisplayName': gatewayModule.gatewayDisplayName,
@@ -76,13 +73,11 @@ class MainEngine(object):
         """添加上层应用"""
         appName = appModule.appName
 
-        # 创建应用实例
-        self.appDict[appName] = appModule.appEngine(self, self.eventEngine)
+        self.appDict[appName] = \
+                appModule.appEngine(self, self.eventEngine)
 
-        # 将应用引擎实例添加到主引擎的属性中
         self.__dict__[appName] = self.appDict[appName]
 
-        # 保存应用信息
         d = {
             'appName': appModule.appName,
             'appDisplayName': appModule.appDisplayName,
@@ -96,7 +91,7 @@ class MainEngine(object):
         if gatewayName in self.gatewayDict:
             return self.gatewayDict[gatewayName]
         else:
-            self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))
+            self.writeLog( '接口{gateway}不存在'.format(gateway=gatewayName))
             return None
 
     def connect(self, gatewayName):
