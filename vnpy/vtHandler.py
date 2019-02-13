@@ -12,11 +12,10 @@ from copy import copy
 from pymongo import MongoClient, ASCENDING
 from pymongo.errors import ConnectionFailure
 
-from vnpy.event import Event
 from vnpy.config import globalSetting
 from vnpy.vtEvent import *
 from vnpy.utility.file import getTempPath
-from vnpy.base_class import Singleton
+from vnpy.base_class import Singleton, Event
 
 
 class DataEngine(object):

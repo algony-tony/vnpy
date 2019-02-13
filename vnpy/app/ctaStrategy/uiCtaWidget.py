@@ -5,7 +5,7 @@ CTA模块相关的GUI控制组件
 '''
 
 
-from vnpy.event import Event
+from vnpy.base_class import Event
 from vnpy.vtEvent import *
 from vnpy.uiBasicWidget import QtCore, QtWidgets
 

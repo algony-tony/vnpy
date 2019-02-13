@@ -16,6 +16,7 @@ from . import vtText
 from .uiQt import QtGui, QtWidgets, QtCore, BASIC_FONT
 from .vtFunction import jsonPathDict
 from .vtConstant import *
+from vnpy.base_class import Event
 
 
 COLOR_RED = QtGui.QColor('red')
