@@ -2,13 +2,13 @@
 
 import time
 
-from vnpy.event import *
 from vnpy.vtEvent import *
 from vnpy.vtConstant import *
 from vnpy.base_class import *
+from vnpy.utility.logging_mixin import LoggingMixin
 
 
-class BaseGateway(object):
+class BaseGateway(LoggingMixin):
     """交易接口"""
 
     def __init__(self, eventEngine, gatewayName):

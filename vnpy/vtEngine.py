@@ -20,8 +20,7 @@ from vnpy.utility.file import getTempPath
 
 class DataEngine(object):
     """数据引擎"""
-    contractFileName = 'ContractData.vt'
-    contractFilePath = getTempPath(contractFileName)
+    contractFilePath = getTempPath('ContractData.vt')
 
     FINISHED_STATUS = ['全部成交', '拒单', '已撤销']
 
@@ -144,18 +143,16 @@ class DataEngine(object):
 
     def saveContracts(self):
         """保存所有合约对象到硬盘"""
-        f = shelve.open(self.contractFilePath)
-        f['data'] = self.contractDict
-        f.close()
+        with shelve.open(self.contractFilePath) as f:
+            f['data'] = self.contractDict
 
     def loadContracts(self):
         """从硬盘读取合约对象"""
-        f = shelve.open(self.contractFilePath)
-        if 'data' in f:
-            d = f['data']
-            for key, value in d.items():
-                self.contractDict[key] = value
-        f.close()
+        with shelve.open(self.contractFilePath) as f:
+            if 'data' in f:
+                d = f['data']
+                for key, value in d.items():
+                    self.contractDict[key] = value
 
     def getOrder(self, vtOrderID):
         """查询委托"""

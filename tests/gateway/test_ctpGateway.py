@@ -203,17 +203,17 @@ class test_ctpGateway():
         sleep(0.5)
         print('-- TD init: ', tdapi.init())
         sleep(1)
-        print('-- TD reqUserLogin: ', tdapi.reqUserLogin(self.loginReq, 1))
+        print('-- TD reqUserLogin: ', tdapi.reqUserLogin(self.loginReq, 2))
         sleep(1)
         # 查询结算单
-        print('-- TD reqQrySettlementInfo: ', tdapi.reqQrySettlementInfo(self.loginReq, 1))
+        print('-- TD reqQrySettlementInfo: ', tdapi.reqQrySettlementInfo(self.loginReq, 3))
         sleep(1)
         # 确认结算
-        print('-- TD reqSettlementInfoConfirm: ', tdapi.reqSettlementInfoConfirm(self.loginReq, 1))
+        print('-- TD reqSettlementInfoConfirm: ', tdapi.reqSettlementInfoConfirm(self.loginReq, 4))
         sleep(1)
-        print('-- TD reqQryInstrument: ', tdapi.reqQryInstrument({'InstrumentID':'rb1905'}, 1))
+        print('-- TD reqQryInstrument: ', tdapi.reqQryInstrument({'InstrumentID':'rb1905'}, 5))
         sleep(1)
-        print('-- TD reqUserLogout: ', tdapi.reqUserLogout({}, 1))
+        print('-- TD reqUserLogout: ', tdapi.reqUserLogout({}, 6))
         sleep(1)
 
         print('-- MD exit: ', mdapi.exit())

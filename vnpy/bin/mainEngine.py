@@ -14,9 +14,8 @@ from pymongo.errors import ConnectionFailure
 
 from vnpy.config import globalSetting
 from vnpy.vtEvent import *
-from vnpy.language import text
 from vnpy.vtEngine import DataEngine, LogEngine
-from vnpy.base_class import LogData, Event
+from vnpy.base_class import LogData
 
 
 class MainEngine(object):
@@ -120,7 +119,8 @@ class MainEngine(object):
 
         if gateway:
             vtOrderID = gateway.sendOrder(orderReq)
-            self.dataEngine.updateOrderReq(orderReq, vtOrderID)     # 更新发出的委托请求到数据引擎中
+            # 更新发出的委托请求到数据引擎中
+            self.dataEngine.updateOrderReq(orderReq, vtOrderID)
             return vtOrderID
         else:
             return ''
@@ -182,7 +182,7 @@ class MainEngine(object):
                 # 调用server_info查询服务器状态，防止服务器异常并未连接成功
                 self.dbClient.server_info()
 
-                self.writeLog(text.DATABASE_CONNECTING_COMPLETED)
+                self.writeLog('MongoDB连接成功')
 
                 # 如果启动日志记录，则注册日志事件监听函数
                 if globalSetting['mongoLogging']:
@@ -190,7 +190,7 @@ class MainEngine(object):
 
             except ConnectionFailure:
                 self.dbClient = None
-                self.writeLog(text.DATABASE_CONNECTING_FAILED)
+                self.writeLog('MongoDB连接失败')
 
     def dbInsert(self, dbName, collectionName, d):
         """向MongoDB中插入数据，d是具体数据"""
@@ -199,7 +199,7 @@ class MainEngine(object):
             collection = db[collectionName]
             collection.insert_one(d)
         else:
-            self.writeLog(text.DATA_INSERT_FAILED)
+            self.writeLog('数据插入失败, MongoDB没有连接')
 
     def dbQuery(self, dbName, collectionName, d, sortKey='', sortDirection=ASCENDING):
         """从MongoDB中读取数据，d是查询要求，返回的是数据库查询的指针"""
@@ -217,7 +217,7 @@ class MainEngine(object):
             else:
                 return []
         else:
-            self.writeLog(text.DATA_QUERY_FAILED)
+            self.writeLog('数据查询失败, MongoDB没有连接')
             return []
 
     def dbUpdate(self, dbName, collectionName, d, flt, upsert=False):
@@ -227,7 +227,7 @@ class MainEngine(object):
             collection = db[collectionName]
             collection.replace_one(flt, d, upsert)
         else:
-            self.writeLog(text.DATA_UPDATE_FAILED)
+            self.writeLog('数据更新失败, MongoDB没有连接')
 
     def dbDelete(self, dbName, collectionName, flt):
         """从数据库中删除数据，flt是过滤条件"""
@@ -236,7 +236,7 @@ class MainEngine(object):
             collection = db[collectionName]
             collection.delete_one(flt)
         else:
-            self.writeLog(text.DATA_DELETE_FAILED)
+            self.writeLog('数据删除失败, MongoDB没有连接')
 
     def dbLogging(self, event):
         """向MongoDB中插入日志"""

@@ -13,7 +13,7 @@ import json
 from copy import copy
 from datetime import datetime, timedelta
 
-from vnpy.event import *
+from vnpy.vtEvent import *
 from vnpy.vtConstant import *
 from vnpy.config import gatewayconfig
 from vnpy.utility.file import getTempPath
@@ -209,17 +209,17 @@ class CtpMdApi(MdApi):
         self.gateway = gateway                  # gateway对象
         self.gatewayName = gateway.gatewayName  # gateway对象名称
 
-        self.reqID = EMPTY_INT              # 操作请求编号
+        self.reqID = 0              # 操作请求编号
 
         self.connectionStatus = False       # 连接状态
         self.loginStatus = False            # 登录状态
 
         self.subscribedSymbols = set()      # 已订阅合约代码
 
-        self.userID = EMPTY_STRING          # 账号
-        self.password = EMPTY_STRING        # 密码
-        self.brokerID = EMPTY_STRING        # 经纪商代码
-        self.address = EMPTY_STRING         # 服务器地址
+        self.userID = ''          # 账号
+        self.password = ''        # 密码
+        self.brokerID = ''        # 经纪商代码
+        self.address = ''         # 服务器地址
 
     def onFrontConnected(self):
         """服务器连接"""
@@ -446,21 +446,21 @@ class CtpTdApi(TdApi):
         self.gateway = gateway                  # gateway对象
         self.gatewayName = gateway.gatewayName  # gateway对象名称
 
-        self.reqID = EMPTY_INT              # 操作请求编号
-        self.orderRef = EMPTY_INT           # 订单编号
+        self.reqID = 0              # 操作请求编号
+        self.orderRef = 0           # 订单编号
 
         self.connectionStatus = False       # 连接状态
         self.loginStatus = False            # 登录状态
         self.authStatus = False             # 验证状态
         self.loginFailed = False            # 登录失败（账号密码错误）
 
-        self.userID = EMPTY_STRING          # 账号
-        self.password = EMPTY_STRING        # 密码
-        self.brokerID = EMPTY_STRING        # 经纪商代码
-        self.address = EMPTY_STRING         # 服务器地址
+        self.userID = ''          # 账号
+        self.password = ''        # 密码
+        self.brokerID = ''        # 经纪商代码
+        self.address = ''         # 服务器地址
 
-        self.frontID = EMPTY_INT            # 前置机编号
-        self.sessionID = EMPTY_INT          # 会话编号
+        self.frontID = 0            # 前置机编号
+        self.sessionID = 0          # 会话编号
 
         self.posDict = {}
         self.symbolExchangeDict = {}        # 保存合约代码和交易所的印射关系

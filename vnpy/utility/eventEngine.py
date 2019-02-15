@@ -1,14 +1,15 @@
 # encoding: UTF-8
 
-from __future__ import print_function
+from time import sleep
 from queue import Queue, Empty
 from threading import Thread
-from time import sleep
 from collections import defaultdict
+
 from qtpy.QtCore import QTimer
 
 from vnpy.vtEvent import *
-from vnpy.base_class import Event
+
+# message queue models
 
 class EventEngine(object):
     """
@@ -147,7 +148,7 @@ class EventEngine2(object):
     计时器使用python线程的事件驱动引擎
     """
 
-    def __init__(self):
+    def __init__(self, SleepInterval=None):
         """初始化事件引擎"""
         # 事件队列
         self.__queue = Queue()
@@ -161,7 +162,10 @@ class EventEngine2(object):
         # 计时器, 用于触发计时器事件, 默认1秒
         self.__timer = Thread(target = self.__runTimer)
         self.__timerActive = False
-        self.__timerSleep = 1
+        if SleepInterval is None:
+            self.__timerSleep = 1
+        else:
+            self.__timerSleep = SleepInterval
 
         # __handlers 保存对应的事件调用关系
         # key: 事件名

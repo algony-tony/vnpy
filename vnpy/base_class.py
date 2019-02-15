@@ -5,16 +5,9 @@ from logging import INFO
 import time
 from datetime import datetime
 
-class Event:
-    """事件对象"""
-    def __init__(self, type_=None):
-        # 事件类型
-        self.type_ = type_
-        # 字典用于保存具体的事件数据
-        self.dict_ = {}
 
 class BaseData(object):
-    """回调函数推送数据的基础类，其他数据类继承于此"""
+    """回调函数推送数据的基础类, 其他数据类继承于此"""
 
     def __init__(self):
         """Constructor"""
