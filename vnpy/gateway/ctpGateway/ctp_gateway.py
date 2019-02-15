@@ -121,10 +121,7 @@ class ctpGateway(BaseGateway):
                 userProductInfo = None
 
         except KeyError:
-            log = VtLogData()
-            log.gatewayName = self.gatewayName
-            log.logContent = '连接配置缺少字段'
-            self.onLog(log)
+            selft.log('连接配置缺少字段')
             return
 
         # 创建行情和交易接口对象
@@ -391,7 +388,7 @@ class CtpMdApi(MdApi):
         # 如果尚未建立服务器连接，则进行连接
         if not self.connectionStatus:
             # 创建C++环境中的API对象，这里传入的参数是需要用来保存.con文件的文件夹路径
-            path = getTempPath(self.gatewayName + '_')
+            path = getTempPath(self.gatewayName + '_Md_')
             self.createFtdcMdApi(path)
 
             # 注册服务器地址
@@ -414,8 +411,6 @@ class CtpMdApi(MdApi):
         self.subscribedSymbols.add(subscribeReq)
 
     def login(self):
-        """登录"""
-        # 如果填入了用户名密码等，则登录
         if self.userID and self.password and self.brokerID:
             req = {}
             req['UserID'] = self.userID
@@ -425,15 +420,10 @@ class CtpMdApi(MdApi):
             self.reqUserLogin(req, self.reqID)
 
     def close(self):
-        """关闭"""
         self.exit()
 
     def writeLog(self, content):
-        """发出日志"""
-        log = VtLogData()
-        log.gatewayName = self.gatewayName
-        log.logContent = content
-        self.gateway.onLog(log)
+        self.gateway.log(content)
 
 
 class CtpTdApi(TdApi):
@@ -1224,8 +1214,9 @@ class CtpTdApi(TdApi):
 
         # 如果尚未建立服务器连接，则进行连接
         if not self.connectionStatus:
-            # 创建C++环境中的API对象，这里传入的参数是需要用来保存.con文件的文件夹路径
-            path = getTempPath(self.gatewayName + '_')
+            # 传入的参数是用来保存 .con 相关文件的文件夹路径
+            path = getTempPath(self.gatewayName + '_Trade_' + self.brokerID
+                               + '_' + self.userID + '_')
             self.createFtdcTraderApi(path)
 
             # 设置数据同步模式为推送从今日开始所有数据
@@ -1348,14 +1339,9 @@ class CtpTdApi(TdApi):
         self.reqOrderAction(req, self.reqID)
 
     def close(self):
-        """关闭"""
         self.exit()
 
     def writeLog(self, content):
-        """发出日志"""
-        log = VtLogData()
-        log.gatewayName = self.gatewayName
-        log.logContent = content
-        self.gateway.onLog(log)
+        self.gateway.log(content)
 
 
