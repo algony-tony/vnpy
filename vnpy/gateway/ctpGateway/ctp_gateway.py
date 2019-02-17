@@ -221,9 +221,7 @@ class CtpMdApi(MdApi):
     def onFrontConnected(self):
         """服务器连接"""
         self.connectionStatus = True
-
         self.writeLog('行情服务器连接成功')
-
         self.login()
 
     def onFrontDisconnected(self, n):
@@ -241,7 +239,7 @@ class CtpMdApi(MdApi):
 
     def onRspError(self, error, n, last):
         """错误回报"""
-        err = VtErrorData()
+        err = ErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
         err.errorMsg = error['ErrorMsg']
@@ -249,20 +247,16 @@ class CtpMdApi(MdApi):
 
     def onRspUserLogin(self, data, error, n, last):
         """登陆回报"""
-        # 如果登录成功，推送日志信息
         if error['ErrorID'] == 0:
             self.loginStatus = True
             self.gateway.mdConnected = True
-
             self.writeLog('行情服务器登录完成')
 
             # 重新订阅之前订阅的合约
             for subscribeReq in self.subscribedSymbols:
                 self.subscribe(subscribeReq)
-
-        # 否则，推送错误信息
         else:
-            err = VtErrorData()
+            err = ErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
             err.errorMsg = error['ErrorMsg']
@@ -270,16 +264,12 @@ class CtpMdApi(MdApi):
 
     def onRspUserLogout(self, data, error, n, last):
         """登出回报"""
-        # 如果登出成功，推送日志信息
         if error['ErrorID'] == 0:
             self.loginStatus = False
             self.gateway.mdConnected = False
-
             self.writeLog('行情服务器登出完成')
-
-        # 否则，推送错误信息
         else:
-            err = VtErrorData()
+            err = ErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
             err.errorMsg = error['ErrorMsg']
@@ -288,7 +278,7 @@ class CtpMdApi(MdApi):
     def onRspSubMarketData(self, data, error, n, last):
         """订阅合约回报"""
         if 'ErrorID' in error and error['ErrorID']:
-            err = VtErrorData()
+            err = ErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
             err.errorMsg = error['ErrorMsg']
@@ -307,7 +297,7 @@ class CtpMdApi(MdApi):
             return
 
         # 创建对象
-        tick = VtTickData()
+        tick = TickData()
         tick.gatewayName = self.gatewayName
 
         tick.symbol = symbol
@@ -379,7 +369,7 @@ class CtpMdApi(MdApi):
         pass
 
     def connect(self, userID, password, brokerID, address):
-        """初始化连接"""
+        """connect and login"""
         self.userID = userID                # 账号
         self.password = password            # 密码
         self.brokerID = brokerID            # 经纪商代码
@@ -387,23 +377,18 @@ class CtpMdApi(MdApi):
 
         # 如果尚未建立服务器连接，则进行连接
         if not self.connectionStatus:
-            # 创建C++环境中的API对象，这里传入的参数是需要用来保存.con文件的文件夹路径
             path = getTempPath(self.gatewayName + '_Md_')
             self.createFtdcMdApi(path)
-
-            # 注册服务器地址
             self.registerFront(self.address)
 
             # 初始化连接，成功会调用onFrontConnected
             self.init()
-
         # 若已经连接但尚未登录，则进行登录
         else:
             if not self.loginStatus:
                 self.login()
 
     def subscribe(self, subscribeReq):
-        """订阅合约"""
         # 这里的设计是，如果尚未登录就调用了订阅方法
         # 则先保存订阅请求，登录完成后会自动订阅
         if self.loginStatus:
@@ -490,7 +475,7 @@ class CtpTdApi(TdApi):
 
             self.login()
         else:
-            err = VtErrorData()
+            err = ErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
             err.errorMsg = error['ErrorMsg']
@@ -516,7 +501,7 @@ class CtpTdApi(TdApi):
 
         # 否则，推送错误信息
         else:
-            err = VtErrorData()
+            err = ErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
             err.errorMsg = error['ErrorMsg']
@@ -536,7 +521,7 @@ class CtpTdApi(TdApi):
 
         # 否则，推送错误信息
         else:
-            err = VtErrorData()
+            err = ErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
             err.errorMsg = error['ErrorMsg']
@@ -553,7 +538,7 @@ class CtpTdApi(TdApi):
     def onRspOrderInsert(self, data, error, n, last):
         """发单错误（柜台）"""
         # 推送委托信息
-        order = VtOrderData()
+        order = OrderData()
         order.gatewayName = self.gatewayName
         order.symbol = data['InstrumentID']
         order.exchange = exchangeMapReverse[data['ExchangeID']]
@@ -568,7 +553,7 @@ class CtpTdApi(TdApi):
         self.gateway.onOrder(order)
 
         # 推送错误信息
-        err = VtErrorData()
+        err = ErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
         err.errorMsg = error['ErrorMsg']
@@ -584,7 +569,7 @@ class CtpTdApi(TdApi):
 
     def onRspOrderAction(self, data, error, n, last):
         """撤单错误（柜台）"""
-        err = VtErrorData()
+        err = ErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
         err.errorMsg = error['ErrorMsg']
@@ -656,7 +641,7 @@ class CtpTdApi(TdApi):
         if posName in self.posDict:
             pos = self.posDict[posName]
         else:
-            pos = VtPositionData()
+            pos = PositionData()
             self.posDict[posName] = pos
 
             pos.gatewayName = self.gatewayName
@@ -706,7 +691,7 @@ class CtpTdApi(TdApi):
 
     def onRspQryTradingAccount(self, data, error, n, last):
         """资金账户查询回报"""
-        account = VtAccountData()
+        account = AccountData()
         account.gatewayName = self.gatewayName
 
         # 账户代码
@@ -756,7 +741,7 @@ class CtpTdApi(TdApi):
 
     def onRspQryInstrument(self, data, error, n, last):
         """合约查询回报"""
-        contract = VtContractData()
+        contract = ContractData()
         contract.gatewayName = self.gatewayName
 
         contract.symbol = data['InstrumentID']
@@ -916,7 +901,7 @@ class CtpTdApi(TdApi):
 
     def onRspError(self, error, n, last):
         """错误回报"""
-        err = VtErrorData()
+        err = ErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
         err.errorMsg = error['ErrorMsg']
@@ -929,7 +914,7 @@ class CtpTdApi(TdApi):
         self.orderRef = max(self.orderRef, int(newref))
 
         # 创建报单数据对象
-        order = VtOrderData()
+        order = OrderData()
         order.gatewayName = self.gatewayName
 
         # 保存代码和报单号
@@ -963,7 +948,7 @@ class CtpTdApi(TdApi):
     def onRtnTrade(self, data):
         """成交回报"""
         # 创建报单数据对象
-        trade = VtTradeData()
+        trade = TradeData()
         trade.gatewayName = self.gatewayName
 
         # 保存代码和报单号
@@ -994,7 +979,7 @@ class CtpTdApi(TdApi):
     def onErrRtnOrderInsert(self, data, error):
         """发单错误回报（交易所）"""
         # 推送委托信息
-        order = VtOrderData()
+        order = OrderData()
         order.gatewayName = self.gatewayName
         order.symbol = data['InstrumentID']
         order.exchange = exchangeMapReverse[data['ExchangeID']]
@@ -1009,7 +994,7 @@ class CtpTdApi(TdApi):
         self.gateway.onOrder(order)
 
         # 推送错误信息
-        err = VtErrorData()
+        err = ErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
         err.errorMsg = error['ErrorMsg']
@@ -1017,7 +1002,7 @@ class CtpTdApi(TdApi):
 
     def onErrRtnOrderAction(self, data, error):
         """撤单错误回报（交易所）"""
-        err = VtErrorData()
+        err = ErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
         err.errorMsg = error['ErrorMsg']

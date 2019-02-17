@@ -16,6 +16,50 @@ from builtins import object
 from contextlib import contextmanager
 from logging import Handler
 
+from vnpy.config import globalSetting
+
+
+LOG_LEVEL = globalSetting['LogLevel']
+
+DEFAULT_LOGGING_CONFIG = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'vnpy': {
+            'format': globalSetting['LogFormat'],
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+        'logfile': {
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'when': 'midnight',
+            'interval': 1,    #1 day
+            'filename': 'vnpy',
+            'formatter': 'vnpy',
+            'base_log_folder': os.path.expanduser(globalSetting['LogFolder']),
+        }
+    },
+    'loggers': {
+        'vnpy.gateway': {
+            'handlers': ['logfile', 'console'],
+            'level': LOG_LEVEL,
+            'propagate': False,
+        },
+        'vnpy.app': {
+            'handlers': ['logfile', 'console'],
+            'level': LOG_LEVEL,
+            'propagate': False,
+        }
+    },
+    'root': {
+        'handlers': ['logfile', 'console'],
+        'level': LOG_LEVEL,
+    }
+}
 
 class LoggingMixin(object):
     """

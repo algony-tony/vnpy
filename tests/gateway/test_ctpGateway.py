@@ -7,6 +7,7 @@ from time import sleep
 from vnpy.config import gatewayconfig, globalSetting
 from vnpy.gateway.ctpGateway.vnctpmd import *
 from vnpy.gateway.ctpGateway.vnctptd import *
+from vnpy.gatewya.ctpGateway.ctp_gateway import ctpGateway
 
 
 def print_dict(d):
@@ -221,6 +222,8 @@ class test_ctpGateway():
         print('-- TD exit: ', tdapi.exit())
         sleep(1)
 
+    def test_ctp(self):
+        psss
 
 
 if __name__ == '__main__':

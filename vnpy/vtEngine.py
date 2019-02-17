@@ -13,7 +13,7 @@ from pymongo import MongoClient, ASCENDING
 from pymongo.errors import ConnectionFailure
 
 from vnpy.config import globalSetting
-from vnpy.base_class import Singleton, Event
+from vnpy.base_class import Singleton
 from vnpy.vtEvent import *
 from vnpy.utility.file import getTempPath
 
