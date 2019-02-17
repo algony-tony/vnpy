@@ -6,20 +6,18 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import os
 import logging
-import sys
-import warnings
-
-import six
-
-from builtins import object
-from contextlib import contextmanager
-from logging import Handler
+import logging.config
 
 from vnpy.config import globalSetting
 
 
 LOG_LEVEL = globalSetting['LogLevel']
+LOG_FILE_NAME = os.path.join(
+    os.path.expanduser(globalSetting['LogFolder']),
+    'vnpy.log'
+)
 
 DEFAULT_LOGGING_CONFIG = {
     'version': 1,
@@ -32,15 +30,14 @@ DEFAULT_LOGGING_CONFIG = {
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'formatter': 'simple',
+            'formatter': 'vnpy',
         },
         'logfile': {
-            'class': 'logging.handlers.TimedRotatingFileHandler',
-            'when': 'midnight',
-            'interval': 1,    #1 day
-            'filename': 'vnpy',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': LOG_FILE_NAME,
             'formatter': 'vnpy',
-            'base_log_folder': os.path.expanduser(globalSetting['LogFolder']),
+            'mode': 'a',
+            'maxBytes': 104857600,  # 100MB
         }
     },
     'loggers': {
@@ -60,6 +57,10 @@ DEFAULT_LOGGING_CONFIG = {
         'level': LOG_LEVEL,
     }
 }
+
+
+logging.config.dictConfigClass(DEFAULT_LOGGING_CONFIG).configure()
+
 
 class LoggingMixin(object):
     """
