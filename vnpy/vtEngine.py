@@ -4,7 +4,6 @@ from __future__ import division
 
 import os
 import shelve
-import logging
 from collections import OrderedDict
 from datetime import datetime
 from copy import copy
@@ -13,12 +12,12 @@ from pymongo import MongoClient, ASCENDING
 from pymongo.errors import ConnectionFailure
 
 from vnpy.config import globalSetting
-from vnpy.base_class import Singleton
 from vnpy.vtEvent import *
 from vnpy.utility.file import getTempPath
+from vnpy.utility.logging_mixin import LoggingMixin
 
 
-class DataEngine(object):
+class DataEngine(LoggingMixin):
     """数据引擎"""
     contractFilePath = getTempPath('ContractData.vt')
 
@@ -28,7 +27,6 @@ class DataEngine(object):
         """Constructor"""
         self.eventEngine = eventEngine
 
-        # 保存数据的字典和列表
         self.tickDict = {}
         self.contractDict = {}
         self.orderDict = {}
@@ -36,17 +34,13 @@ class DataEngine(object):
         self.tradeDict = {}
         self.accountDict = {}
         self.positionDict = {}
-        self.logList = []
-        self.errorList = []
 
-        # 持仓细节相关
-        self.detailDict = {}                                # vtSymbol:PositionDetail
-        self.tdPenaltyList = globalSetting['tdPenalty']     # 平今手续费惩罚的产品代码列表
+        # 持仓细节相关 vtSymbol:PositionDetail
+        self.detailDict = {}
+        # 平今手续费惩罚的产品代码列表
+        self.tdPenaltyList = globalSetting['tdPenalty']
 
-        # 读取保存在硬盘的合约数据
         self.loadContracts()
-
-        # 注册事件监听
         self.registerEvent()
 
     def registerEvent(self):
@@ -57,8 +51,6 @@ class DataEngine(object):
         self.eventEngine.register(EVENT_TRADE, self.processTradeEvent)
         self.eventEngine.register(EVENT_POSITION, self.processPositionEvent)
         self.eventEngine.register(EVENT_ACCOUNT, self.processAccountEvent)
-        self.eventEngine.register(EVENT_LOG, self.processLogEvent)
-        self.eventEngine.register(EVENT_ERROR, self.processErrorEvent)
 
     def processTickEvent(self, event):
         """处理成交事件"""
@@ -112,16 +104,6 @@ class DataEngine(object):
         """处理账户事件"""
         account = event.dict_['data']
         self.accountDict[account.vtAccountID] = account
-
-    def processLogEvent(self, event):
-        """处理日志事件"""
-        log = event.dict_['data']
-        self.logList.append(log)
-
-    def processErrorEvent(self, event):
-        """处理错误事件"""
-        error = event.dict_['data']
-        self.errorList.append(error)
 
     def getTick(self, vtSymbol):
         """查询行情对象"""
@@ -225,98 +207,6 @@ class DataEngine(object):
             return [req]
         else:
             return detail.convertOrderReq(req)
-
-    def getLog(self):
-        """获取日志"""
-        return self.logList
-
-    def getError(self):
-        """获取错误"""
-        return self.errorList
-
-
-class LogEngine(object, metaclass=Singleton):
-    """日志引擎"""
-
-    # 单例模式 py2 写法
-    # __metaclass__ = Singleton
-
-    # 日志级别
-    LEVEL_DEBUG = logging.DEBUG
-    LEVEL_INFO = logging.INFO
-    LEVEL_WARN = logging.WARN
-    LEVEL_ERROR = logging.ERROR
-    LEVEL_CRITICAL = logging.CRITICAL
-
-    def __init__(self):
-        """Constructor"""
-        self.logger = logging.getLogger()
-        self.formatter = logging.Formatter('%(asctime)s  %(levelname)s: %(message)s')
-        self.level = self.LEVEL_CRITICAL
-
-        self.consoleHandler = None
-        self.fileHandler = None
-
-        # 添加NullHandler防止无handler的错误输出
-        nullHandler = logging.NullHandler()
-        self.logger.addHandler(nullHandler)
-
-        # 日志级别函数映射
-        self.levelFunctionDict = {
-            self.LEVEL_DEBUG: self.debug,
-            self.LEVEL_INFO: self.info,
-            self.LEVEL_WARN: self.warn,
-            self.LEVEL_ERROR: self.error,
-            self.LEVEL_CRITICAL: self.critical,
-        }
-
-    def setLogLevel(self, level):
-        """设置日志级别"""
-        self.logger.setLevel(level)
-        self.level = level
-
-    def addConsoleHandler(self):
-        if not self.consoleHandler:
-            self.consoleHandler = logging.StreamHandler()
-            self.consoleHandler.setLevel(self.level)
-            self.consoleHandler.setFormatter(self.formatter)
-            self.logger.addHandler(self.consoleHandler)
-
-    def addFileHandler(self, filename=''):
-        if not self.fileHandler:
-            if not filename:
-                filename = 'vt_' + datetime.now().strftime('%Y%m%d%H%M%S') + '.log'
-            filepath = getTempPath(filename)
-            self.fileHandler = logging.FileHandler(filepath, mode='w', encoding='utf-8')
-            self.fileHandler.setLevel(self.level)
-            self.fileHandler.setFormatter(self.formatter)
-            self.logger.addHandler(self.fileHandler)
-
-    def debug(self, msg):
-        self.logger.debug(msg)
-
-    def info(self, msg):
-        self.logger.info(msg)
-
-    def warn(self, msg):
-        self.logger.warn(msg)
-
-    def error(self, msg):
-        self.logger.error(msg)
-
-    def exception(self, msg):
-        self.logger.exception(msg)
-
-    def critical(self, msg):
-        self.logger.critical(msg)
-
-    def processLogEvent(self, event):
-        """处理日志事件"""
-        log = event.dict_['data']
-        # 获取日志级别对应的处理函数
-        function = self.levelFunctionDict[log.logLevel]
-        msg = '\t'.join([log.gatewayName, log.logContent])
-        function(msg)
 
 
 class PositionDetail(object):

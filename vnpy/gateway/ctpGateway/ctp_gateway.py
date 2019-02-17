@@ -121,7 +121,7 @@ class ctpGateway(BaseGateway):
                 userProductInfo = None
 
         except KeyError:
-            selft.log('连接配置缺少字段')
+            self.log.info('连接配置缺少字段')
             return
 
         # 创建行情和交易接口对象
@@ -408,7 +408,7 @@ class CtpMdApi(MdApi):
         self.exit()
 
     def writeLog(self, content):
-        self.gateway.log(content)
+        self.gateway.log.info(content)
 
 
 class CtpTdApi(TdApi):
@@ -1327,6 +1327,6 @@ class CtpTdApi(TdApi):
         self.exit()
 
     def writeLog(self, content):
-        self.gateway.log(content)
+        self.gateway.log.info(content)
 
 

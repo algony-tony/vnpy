@@ -1,15 +1,15 @@
 import unittest
 
-from .vnpy.utility.logging_mixin import LoggingMixin
+from vnpy.utility.logging_mixin import LoggingMixin
 
 class NewLog(LoggingMixin):
-    def __init__():
+    def __init__(self):
         self.log.info('init')
 
-    def msgdebug():
+    def msgdebug(self):
         self.log.debug('msgdebug')
 
-class TestLogging(unittest.TestCase, LoggingMixin):
+class TestLogging(unittest.TestCase):
     def setup(self):
         pass
 

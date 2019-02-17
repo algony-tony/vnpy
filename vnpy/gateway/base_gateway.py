@@ -77,18 +77,10 @@ class BaseGateway(LoggingMixin):
         self.eventEngine.put(event2)
 
     def onError(self, error):
-        """错误信息推送"""
-        # 通用事件
-        event1 = Event(type_=EVENT_ERROR)
-        event1.dict_['data'] = error
-        self.eventEngine.put(event1)
+        self.log.info('Error ' + error)
 
-    def onLog(self, log):
-        """日志推送"""
-        # 通用事件
-        event1 = Event(type_=EVENT_LOG)
-        event1.dict_['data'] = log
-        self.eventEngine.put(event1)
+    def onLog(self, msg):
+        self.log.info(msg)
 
     def onContract(self, contract):
         """合约基础信息推送"""

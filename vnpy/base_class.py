@@ -4,9 +4,10 @@ from logging import INFO
 
 import time
 from datetime import datetime
+from vnpy.utility.logging_mixin import LoggingMixin
 
 
-class BaseData(object):
+class BaseData(LoggingMixin):
     """回调函数推送数据的基础类, 其他数据类继承于此"""
 
     def __init__(self):
@@ -486,17 +487,3 @@ class HistoryReq(object):
         self.start = None                       # 起始时间datetime对象
         self.end = None                         # 结束时间datetime对象
 
-
-class Singleton(type):
-    """
-    单例，应用方式:静态变量 __metaclass__ = Singleton
-    """
-
-    _instances = {}
-
-    def __call__(cls, *args, **kwargs):
-        """调用"""
-        if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
-
-        return cls._instances[cls]
