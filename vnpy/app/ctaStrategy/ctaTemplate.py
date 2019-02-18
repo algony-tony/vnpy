@@ -6,26 +6,25 @@
 
 from vnpy.vtConstant import *
 from vnpy.vtUtility import BarGenerator, ArrayManager
+from vnpy.utility.logging_mixin import LoggingMixin
 
 from .ctaBase import *
 
 
-class CtaTemplate(object):
+class CtaTemplate(LoggingMixin):
     """CTA策略模板"""
-
-    # 策略类的名称和作者
     className = 'CtaTemplate'
-    author = EMPTY_UNICODE
+    author = 'author'
 
     # MongoDB数据库的名称，K线数据库默认为1分钟
-    tickDbName = TICK_DB_NAME
-    barDbName = MINUTE_DB_NAME
+    __tickDbName = TICK_DB_NAME
+    __barDbName = MINUTE_DB_NAME
 
     # 策略的基本参数
-    name = EMPTY_UNICODE           # 策略实例名称
-    vtSymbol = EMPTY_STRING        # 交易的合约vt系统代码
-    productClass = EMPTY_STRING    # 产品类型（只有IB接口需要）
-    currency = EMPTY_STRING        # 货币（只有IB接口需要）
+    name = ''           # 策略实例名称
+    vtSymbol = ''        # 交易的合约vt系统代码
+    productClass = ''    # 产品类型（只有IB接口需要）
+    currency = ''        # 货币（只有IB接口需要）
 
     # 策略的基本变量，由引擎管理
     inited = False                 # 是否进行了初始化
@@ -135,24 +134,22 @@ class CtaTemplate(object):
 
     def insertTick(self, tick):
         """向数据库中插入tick数据"""
-        self.ctaEngine.insertData(self.tickDbName, self.vtSymbol, tick)
+        self.ctaEngine.insertData(self.__tickDbName, self.vtSymbol, tick)
 
     def insertBar(self, bar):
         """向数据库中插入bar数据"""
-        self.ctaEngine.insertData(self.barDbName, self.vtSymbol, bar)
+        self.ctaEngine.insertData(self.__barDbName, self.vtSymbol, bar)
 
     def loadTick(self, days):
         """读取tick数据"""
-        return self.ctaEngine.loadTick(self.tickDbName, self.vtSymbol, days)
+        return self.ctaEngine.loadTick(self.__tickDbName, self.vtSymbol, days)
 
     def loadBar(self, days):
         """读取bar数据"""
-        return self.ctaEngine.loadBar(self.barDbName, self.vtSymbol, days)
+        return self.ctaEngine.loadBar(self.__barDbName, self.vtSymbol, days)
 
-    def writeCtaLog(self, content):
-        """记录CTA日志"""
-        content = self.name + ':' + content
-        self.ctaEngine.writeCtaLog(content)
+    def writeLog(self, content):
+        self.log.info(content)
 
     def putEvent(self):
         """发出策略状态变化事件"""
@@ -304,7 +301,7 @@ class TargetPosTemplate(CtaTemplate):
             self.orderList.extend(l)
 
 
-class CtaSignal(object):
+class CtaSignal(LoggingMixin):
     """
     CTA策略信号，负责纯粹的信号生成（目标仓位），不参与具体交易管理
     """

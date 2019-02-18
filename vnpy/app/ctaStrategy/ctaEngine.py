@@ -15,8 +15,8 @@ from copy import copy
 
 from vnpy.vtEvent import *
 from vnpy.vtConstant import *
-from vnpy.base_class import TickData, BarData, Event
-from vnpy.base_class import SubscribeReq, OrderReq, CancelOrderReq, LogData
+from vnpy.base_class import TickData, BarData
+from vnpy.base_class import SubscribeReq, OrderReq, CancelOrderReq
 from vnpy.vtFunction import todayDate, getJsonPath
 from vnpy.app import AppEngine
 from vnpy.config import globalSetting
@@ -27,8 +27,7 @@ from .strategy import STRATEGY_CLASS
 
 class CtaEngine(AppEngine):
     """CTA策略引擎"""
-    settingFileName = 'CTA_setting.json'
-    settingFilePath = getJsonPath(settingFileName, __file__)
+    settingFilePath = getJsonPath('CTA_setting.json', __file__)
 
     STATUS_FINISHED = set([STATUS_REJECTED, STATUS_CANCELLED, STATUS_ALLTRADED])
 
@@ -36,8 +35,6 @@ class CtaEngine(AppEngine):
         """Constructor"""
         self.mainEngine = mainEngine
         self.eventEngine = eventEngine
-
-        # 当前日期
         self.today = todayDate()
 
         # 保存策略实例的字典
@@ -80,9 +77,6 @@ class CtaEngine(AppEngine):
 
         # 初始化RQData服务
         self.initRqData()
-
-        # 注册日式事件类型
-        self.mainEngine.registerLogEvent(EVENT_CTA_LOG)
 
         # 注册事件监听
         self.registerEvent()
@@ -134,7 +128,7 @@ class CtaEngine(AppEngine):
             self.strategyOrderDict[strategy.name].add(vtOrderID)                         # 添加到策略委托号集合中
             vtOrderIDList.append(vtOrderID)
 
-        self.writeCtaLog(u'策略%s发送委托，%s，%s，%s@%s'
+        self.writeLog('策略%s发送委托，%s，%s，%s@%s'
                          %(strategy.name, vtSymbol, req.direction, volume, price))
 
         return vtOrderIDList
@@ -277,7 +271,7 @@ class CtaEngine(AppEngine):
                 if not tick.datetime:
                     tick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S.%f')
             except ValueError:
-                self.writeCtaLog(traceback.format_exc())
+                self.writeLog(traceback.format_exc())
                 return
 
             # 逐个推送到策略实例中
@@ -328,7 +322,6 @@ class CtaEngine(AppEngine):
             self.saveSyncData(strategy)
 
     def registerEvent(self):
-        """注册事件监听"""
         self.eventEngine.register(EVENT_TICK, self.processTickEvent)
         self.eventEngine.register(EVENT_ORDER, self.processOrderEvent)
         self.eventEngine.register(EVENT_TRADE, self.processTradeEvent)
@@ -371,14 +364,8 @@ class CtaEngine(AppEngine):
             l.append(tick)
         return l
 
-    def writeCtaLog(self, content):
-        """快速发出CTA模块日志事件"""
-        log = LogData()
-        log.logContent = content
-        log.gatewayName = 'CTA_STRATEGY'
-        event = Event(type_=EVENT_CTA_LOG)
-        event.dict_['data'] = log
-        self.eventEngine.put(event)
+    def writeLog(self, content):
+        self.log.info(content)
 
     def loadStrategy(self, setting):
         """载入策略"""
@@ -387,18 +374,18 @@ class CtaEngine(AppEngine):
             className = setting['className']
         except Exception:
             msg = traceback.format_exc()
-            self.writeCtaLog(u'载入策略出错：%s' %msg)
+            self.writeLog('载入策略出错: %s' %msg)
             return
 
         # 获取策略类
         strategyClass = STRATEGY_CLASS.get(className, None)
         if not strategyClass:
-            self.writeCtaLog(u'找不到策略类：%s' %className)
+            self.writeLog('找不到策略类: %s' %className)
             return
 
         # 防止策略重名
         if name in self.strategyDict:
-            self.writeCtaLog(u'策略实例重名：%s' %name)
+            self.writeLog('策略实例重名: %s' %name)
         else:
             # 创建策略实例
             strategy = strategyClass(self, setting)
@@ -430,7 +417,7 @@ class CtaEngine(AppEngine):
 
             self.mainEngine.subscribe(req, contract.gatewayName)
         else:
-            self.writeCtaLog(u'%s的交易合约%s无法找到' %(strategy.name, strategy.vtSymbol))
+            self.writeLog('%s的交易合约%s无法找到' %(strategy.name, strategy.vtSymbol))
 
     def initStrategy(self, name):
         """初始化策略"""
@@ -444,9 +431,9 @@ class CtaEngine(AppEngine):
                 self.loadSyncData(strategy)                             # 初始化完成后加载同步数据
                 self.subscribeMarketData(strategy)                      # 加载同步数据后再订阅行情
             else:
-                self.writeCtaLog(u'请勿重复初始化策略实例：%s' %name)
+                self.writeLog('请勿重复初始化策略实例: %s' %name)
         else:
-            self.writeCtaLog(u'策略实例不存在：%s' %name)
+            self.writeLog('策略实例不存在: %s' %name)
 
     def startStrategy(self, name):
         """启动策略"""
@@ -457,7 +444,7 @@ class CtaEngine(AppEngine):
                 strategy.trading = True
                 self.callStrategyFunc(strategy, strategy.onStart)
         else:
-            self.writeCtaLog(u'策略实例不存在：%s' %name)
+            self.writeLog('策略实例不存在: %s' %name)
 
     def stopStrategy(self, name):
         """停止策略"""
@@ -478,7 +465,7 @@ class CtaEngine(AppEngine):
                     if so.strategy is strategy:
                         self.cancelStopOrder(stopOrderID)
         else:
-            self.writeCtaLog(u'策略实例不存在：%s' %name)
+            self.writeLog('策略实例不存在: %s' %name)
 
     def initAll(self):
         """全部初始化"""
@@ -528,7 +515,7 @@ class CtaEngine(AppEngine):
 
             return varDict
         else:
-            self.writeCtaLog(u'策略实例不存在：' + name)
+            self.writeLog('策略实例不存在: ' + name)
             return None
 
     def getStrategyParam(self, name):
@@ -542,7 +529,7 @@ class CtaEngine(AppEngine):
 
             return paramDict
         else:
-            self.writeCtaLog(u'策略实例不存在：' + name)
+            self.writeLog('策略实例不存在: ' + name)
             return None
 
     def getStrategyNames(self):
@@ -577,9 +564,9 @@ class CtaEngine(AppEngine):
             strategy.inited = False
 
             # 发出日志
-            content = '\n'.join([u'策略%s触发异常已停止' %strategy.name,
+            content = '\n'.join(['策略%s触发异常已停止' %strategy.name,
                                 traceback.format_exc()])
-            self.writeCtaLog(content)
+            self.writeLog(content)
 
     def saveSyncData(self, strategy):
         """保存策略的持仓情况到数据库"""
@@ -593,8 +580,8 @@ class CtaEngine(AppEngine):
         self.mainEngine.dbUpdate(POSITION_DB_NAME, strategy.className,
                                  d, flt, True)
 
-        content = u'策略%s同步数据保存成功，当前持仓%s' %(strategy.name, strategy.pos)
-        self.writeCtaLog(content)
+        content = '策略%s同步数据保存成功，当前持仓%s' %(strategy.name, strategy.pos)
+        self.writeLog(content)
 
     def loadSyncData(self, strategy):
         """从数据库载入策略的持仓情况"""

@@ -1,6 +1,8 @@
 # encoding: UTF-8
 
-class AppEngine(object):
+from vnpy.utility.logging_mixin import LoggingMixin
+
+class AppEngine(LoggingMixin):
     """"""
 
     def __init__(self):

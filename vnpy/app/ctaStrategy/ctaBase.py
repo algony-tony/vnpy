@@ -33,10 +33,6 @@ MINUTE_DB_NAME = 'VnTrader_1Min_Db'
 ENGINETYPE_BACKTESTING = 'backtesting'  # 回测
 ENGINETYPE_TRADING = 'trading'          # 实盘
 
-# CTA模块事件
-EVENT_CTA_LOG = 'eCtaLog'               # CTA相关的日志事件
-EVENT_CTA_STRATEGY = 'eCtaStrategy.'    # CTA策略状态变化事件
-
 
 class StopOrder(object):
     """本地停止单"""

@@ -7,8 +7,6 @@ from datetime import datetime, time
 
 from vnpy.bin.mainEngine import MainEngine
 from vnpy.utility.eventEngine import EventEngine2
-from vnpy.base_class import EVENT_LOG, EVENT_ERROR
-from vnpy.vtEngine import LogEngine
 from vnpy.gateway import ctpGateway
 from vnpy.app import ctaStrategy
 from vnpy.app.ctaStrategy.ctaBase import EVENT_CTA_LOG
@@ -27,29 +25,13 @@ def runChildProcess():
     """子进程运行函数"""
     print("--- runChildProcess ---")
 
-    # 创建日志引擎
-    le = LogEngine()
-    le.setLogLevel(le.LEVEL_DEBUG)
-    le.addConsoleHandler()
-    le.addFileHandler()
-
-    le.info('启动CTA策略运行子进程')
-
     ee = EventEngine2()
-    le.info('EventEngine2 finished.')
+    print('EventEngine2 finished.')
 
     me = MainEngine(ee)
     me.addGateway(ctpGateway)
     me.addApp(ctaStrategy)
-    le.info('主引擎创建成功')
-
-    ee.register(EVENT_LOG, le.processLogEvent)
-    ee.register(EVENT_CTA_LOG, le.processLogEvent)
-    ee.register(EVENT_ERROR, processErrorEvent)
-    le.info('注册日志事件监听')
-
     me.connect('CTP')
-    le.info('连接CTP接口')
 
     sleep(10)                       # 等待CTP接口初始化
     me.dataEngine.saveContracts()   # 保存合约信息到文件
@@ -57,13 +39,13 @@ def runChildProcess():
     cta = me.getApp(ctaStrategy.appName)
 
     cta.loadSetting()
-    le.info('CTA策略载入成功')
+    print('CTA策略载入成功')
 
     cta.initAll()
-    le.info('CTA策略初始化成功')
+    print('CTA策略初始化成功')
 
     cta.startAll()
-    le.info('CTA策略启动成功')
+    print('CTA策略启动成功')
 
     while True:
         sleep(1)
@@ -75,7 +57,7 @@ def runParentProcess():
     le.setLogLevel(le.LEVEL_INFO)
     le.addConsoleHandler()
 
-    le.info('启动CTA策略守护父进程')
+    print('启动CTA策略守护父进程')
 
     DAY_START = time(8, 45)         # 日盘启动和停止时间
     DAY_END = time(15, 30)
@@ -97,18 +79,18 @@ def runParentProcess():
 
         # 记录时间则需要启动子进程
         if recording and p is None:
-            le.info('启动子进程')
+            print('启动子进程')
             p = multiprocessing.Process(target=runChildProcess)
             p.start()
-            le.info('子进程启动成功')
+            print('子进程启动成功')
 
         # 非记录时间则退出子进程
         if not recording and p is not None:
-            le.info('关闭子进程')
+            print('关闭子进程')
             p.terminate()
             p.join()
             p = None
-            le.info('子进程关闭成功')
+            print('子进程关闭成功')
 
         sleep(5)
 

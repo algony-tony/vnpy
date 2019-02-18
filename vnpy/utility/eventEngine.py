@@ -8,10 +8,11 @@ from collections import defaultdict
 from qtpy.QtCore import QTimer
 
 from vnpy.vtEvent import *
+from vnpy.utility.logging_mixin import LoggingMixin
 
 # message queue models
 
-class EventEngine(object):
+class EventEngine(LoggingMixin):
     """
     事件驱动引擎
 
@@ -143,14 +144,13 @@ class EventEngine(object):
             pass
 
 
-class EventEngine2(object):
+class EventEngine2(LoggingMixin):
     """
     计时器使用python线程的事件驱动引擎
     """
 
     def __init__(self, SleepInterval=None):
-        """初始化事件引擎"""
-        # 事件队列
+        self.log.debug('EventEngine2 initing...')
         self.__queue = Queue()
 
         # 事件引擎开关

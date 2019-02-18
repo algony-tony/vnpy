@@ -4,7 +4,6 @@ from __future__ import division
 
 import os
 import shelve
-import logging
 from collections import OrderedDict
 from datetime import datetime
 from copy import copy
@@ -12,18 +11,15 @@ from copy import copy
 from pymongo import MongoClient, ASCENDING
 from pymongo.errors import ConnectionFailure
 
-from vnpy.config import globalSetting
 from vnpy.vtEvent import *
-from vnpy.vtEngine import DataEngine, LogEngine
-from vnpy.base_class import LogData
+from vnpy.vtEngine import DataEngine
+from vnpy.config import globalSetting
+from vnpy.utility.logging_mixin import LoggingMixin
 
 
-class MainEngine(object):
+class MainEngine(LoggingMixin):
     """主引擎"""
-
     def __init__(self, eventEngine):
-        """Constructor"""
-        # 记录今日日期
         self.todayDate = datetime.now().strftime('%Y%m%d')
 
         # 绑定事件引擎
@@ -46,10 +42,6 @@ class MainEngine(object):
 
         # 风控引擎实例（特殊独立对象）
         self.rmEngine = None
-
-        # 日志引擎实例
-        self.logEngine = None
-        self.initLogEngine()
 
     def addGateway(self, gatewayModule):
         """添加底层接口"""
@@ -90,22 +82,17 @@ class MainEngine(object):
         if gatewayName in self.gatewayDict:
             return self.gatewayDict[gatewayName]
         else:
-            self.writeLog( '接口{gateway}不存在'.format(gateway=gatewayName))
+            self.writeLog('接口{gateway}不存在'.format(gateway=gatewayName))
             return None
 
     def connect(self, gatewayName):
-        """连接特定名称的接口"""
         gateway = self.getGateway(gatewayName)
-
         if gateway:
             gateway.connect()
-
         self.dbConnect()
 
     def subscribe(self, subscribeReq, gatewayName):
-        """订阅特定接口的行情"""
         gateway = self.getGateway(gatewayName)
-
         if gateway:
             gateway.subscribe(subscribeReq)
 
@@ -163,13 +150,7 @@ class MainEngine(object):
         self.dataEngine.saveContracts()
 
     def writeLog(self, content):
-        """快速发出日志事件"""
-        log = LogData()
-        log.logContent = content
-        log.gatewayName = 'MAIN_ENGINE'
-        event = Event(type_=EVENT_LOG)
-        event.dict_['data'] = log
-        self.eventEngine.put(event)
+        self.log.info(content)
 
     def dbConnect(self):
         """连接MongoDB数据库"""
@@ -183,10 +164,6 @@ class MainEngine(object):
                 self.dbClient.server_info()
 
                 self.writeLog('MongoDB连接成功')
-
-                # 如果启动日志记录，则注册日志事件监听函数
-                if globalSetting['mongoLogging']:
-                    self.eventEngine.register(EVENT_LOG, self.dbLogging)
 
             except ConnectionFailure:
                 self.dbClient = None
@@ -237,16 +214,6 @@ class MainEngine(object):
             collection.delete_one(flt)
         else:
             self.writeLog('数据删除失败, MongoDB没有连接')
-
-    def dbLogging(self, event):
-        """向MongoDB中插入日志"""
-        log = event.dict_['data']
-        d = {
-            'content': log.logContent,
-            'time': log.logTime,
-            'gateway': log.gatewayName
-        }
-        self.dbInsert(globalSetting['mongoLogDBName'], self.todayDate, d)
 
     def getTick(self, vtSymbol):
         """查询行情"""
@@ -304,49 +271,7 @@ class MainEngine(object):
         """获取APP引擎对象"""
         return self.appDict[appName]
 
-    def initLogEngine(self):
-        """初始化日志引擎"""
-        if not globalSetting["logActive"]:
-            return
-
-        # 创建引擎
-        self.logEngine = LogEngine()
-
-        # 设置日志级别
-        levelDict = {
-            "debug": LogEngine.LEVEL_DEBUG,
-            "info": LogEngine.LEVEL_INFO,
-            "warn": LogEngine.LEVEL_WARN,
-            "error": LogEngine.LEVEL_ERROR,
-            "critical": LogEngine.LEVEL_CRITICAL,
-        }
-        level = levelDict.get(globalSetting["logLevel"], LogEngine.LEVEL_CRITICAL)
-        self.logEngine.setLogLevel(level)
-
-        # 设置输出
-        if globalSetting['logConsole']:
-            self.logEngine.addConsoleHandler()
-
-        if globalSetting['logFile']:
-            self.logEngine.addFileHandler()
-
-        # 注册事件监听
-        self.registerLogEvent(EVENT_LOG)
-
-    def registerLogEvent(self, eventType):
-        """注册日志事件监听"""
-        if self.logEngine:
-            self.eventEngine.register(eventType, self.logEngine.processLogEvent)
-
     def convertOrderReq(self, req):
         """转换委托请求"""
         return self.dataEngine.convertOrderReq(req)
-
-    def getLog(self):
-        """查询日志"""
-        return self.dataEngine.getLog()
-
-    def getError(self):
-        """查询错误"""
-        return self.dataEngine.getError()
 
