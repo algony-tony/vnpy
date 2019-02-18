@@ -11,11 +11,10 @@ from vnpy.app.ctaStrategy.ctaTemplate import (CtaTemplate,
                                                      ArrayManager)
 
 
-########################################################################
 class DoubleMaStrategy(CtaTemplate):
     """双指数均线策略Demo"""
     className = 'DoubleMaStrategy'
-    author = u'用Python的交易员'
+    author = '用Python的交易员'
 
     # 策略参数
     fastWindow = 10     # 快速均线参数
@@ -49,7 +48,6 @@ class DoubleMaStrategy(CtaTemplate):
     # 同步列表，保存了需要保存到数据库的变量名称
     syncList = ['pos']
 
-    #----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):
         """Constructor"""
         super(DoubleMaStrategy, self).__init__(ctaEngine, setting)
@@ -62,10 +60,9 @@ class DoubleMaStrategy(CtaTemplate):
         # 策略类中的这些可变对象属性可以选择不写，全都放在__init__下面，写主要是为了阅读
         # 策略时方便（更多是个编程习惯的选择）
 
-    #----------------------------------------------------------------------
     def onInit(self):
         """初始化策略（必须由用户继承实现）"""
-        self.writeCtaLog(u'双EMA演示策略初始化')
+        self.writeLog('双EMA演示策略初始化')
 
         initData = self.loadBar(self.initDays)
         for bar in initData:
@@ -73,24 +70,20 @@ class DoubleMaStrategy(CtaTemplate):
 
         self.putEvent()
 
-    #----------------------------------------------------------------------
     def onStart(self):
         """启动策略（必须由用户继承实现）"""
-        self.writeCtaLog(u'双EMA演示策略启动')
+        self.writeLog('双EMA演示策略启动')
         self.putEvent()
 
-    #----------------------------------------------------------------------
     def onStop(self):
         """停止策略（必须由用户继承实现）"""
-        self.writeCtaLog(u'双EMA演示策略停止')
+        self.writeLog('双EMA演示策略停止')
         self.putEvent()
 
-    #----------------------------------------------------------------------
     def onTick(self, tick):
         """收到行情TICK推送（必须由用户继承实现）"""
         self.bg.updateTick(tick)
 
-    #----------------------------------------------------------------------
     def onBar(self, bar):
         """收到Bar推送（必须由用户继承实现）"""
         am = self.am
@@ -132,19 +125,16 @@ class DoubleMaStrategy(CtaTemplate):
         # 发出状态更新事件
         self.putEvent()
 
-    #----------------------------------------------------------------------
     def onOrder(self, order):
         """收到委托变化推送（必须由用户继承实现）"""
         # 对于无需做细粒度委托控制的策略，可以忽略onOrder
         pass
 
-    #----------------------------------------------------------------------
     def onTrade(self, trade):
         """收到成交推送（必须由用户继承实现）"""
         # 对于无需做细粒度委托控制的策略，可以忽略onOrder
         pass
 
-    #----------------------------------------------------------------------
     def onStopOrder(self, so):
         """停止单推送"""
         pass

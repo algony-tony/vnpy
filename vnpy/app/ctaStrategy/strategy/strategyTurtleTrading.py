@@ -13,11 +13,10 @@ from vnpy.app.ctaStrategy.ctaTemplate import (CtaTemplate,
                                                      ArrayManager)
 
 
-########################################################################
 class TurtleTradingStrategy(CtaTemplate):
     """海龟交易策略"""
     className = 'TurtleTradingStrategy'
-    author = u'用Python的交易员'
+    author = '用Python的交易员'
 
     # 策略参数
     entryWindow = 55                    # 入场通道窗口
@@ -65,7 +64,6 @@ class TurtleTradingStrategy(CtaTemplate):
     # 同步列表，保存了需要保存到数据库的变量名称
     syncList = ['pos']
 
-    #----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):
         """Constructor"""
         super(TurtleTradingStrategy, self).__init__(ctaEngine, setting)
@@ -73,10 +71,9 @@ class TurtleTradingStrategy(CtaTemplate):
         self.bg = BarGenerator(self.onBar)
         self.am = ArrayManager()
 
-    #----------------------------------------------------------------------
     def onInit(self):
         """初始化策略（必须由用户继承实现）"""
-        self.writeCtaLog(u'%s策略初始化' %self.name)
+        self.writeLog('%s策略初始化' %self.name)
 
         # 载入历史数据，并采用回放计算的方式初始化策略数值
         initData = self.loadBar(self.initDays)
@@ -85,24 +82,20 @@ class TurtleTradingStrategy(CtaTemplate):
 
         self.putEvent()
 
-    #----------------------------------------------------------------------
     def onStart(self):
         """启动策略（必须由用户继承实现）"""
-        self.writeCtaLog(u'%s策略启动' %self.name)
+        self.writeLog('%s策略启动' %self.name)
         self.putEvent()
 
-    #----------------------------------------------------------------------
     def onStop(self):
         """停止策略（必须由用户继承实现）"""
-        self.writeCtaLog(u'%s策略停止' %self.name)
+        self.writeLog('%s策略停止' %self.name)
         self.putEvent()
 
-    #----------------------------------------------------------------------
     def onTick(self, tick):
         """收到行情TICK推送（必须由用户继承实现）"""
         self.bg.updateTick(tick)
 
-    #----------------------------------------------------------------------
     def onBar(self, bar):
         """收到Bar推送（必须由用户继承实现）"""
         self.cancelAll()
@@ -151,12 +144,10 @@ class TurtleTradingStrategy(CtaTemplate):
         # 发出状态更新事件
         self.putEvent()
 
-    #----------------------------------------------------------------------
     def onOrder(self, order):
         """收到委托变化推送（必须由用户继承实现）"""
         pass
 
-    #----------------------------------------------------------------------
     def onTrade(self, trade):
         """成交推送"""
         if trade.direction == DIRECTION_LONG:
@@ -169,12 +160,10 @@ class TurtleTradingStrategy(CtaTemplate):
         # 发出状态更新事件
         self.putEvent()
 
-    #----------------------------------------------------------------------
     def onStopOrder(self, so):
         """停止单推送"""
         pass
 
-    #----------------------------------------------------------------------
     def sendBuyOrders(self, price):
         """发出一系列的买入停止单"""
         t = self.pos / self.fixedSize
@@ -191,7 +180,6 @@ class TurtleTradingStrategy(CtaTemplate):
         if t < 4:
             self.buy(price + self.atrVolatility*1.5, self.fixedSize, True)
 
-    #----------------------------------------------------------------------
     def sendShortOrders(self, price):
         """"""
         t = self.pos / self.fixedSize

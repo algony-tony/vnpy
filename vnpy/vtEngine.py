@@ -53,15 +53,14 @@ class DataEngine(LoggingMixin):
         self.eventEngine.register(EVENT_ACCOUNT, self.processAccountEvent)
 
     def processTickEvent(self, event):
-        self.log.debug('处理成交事件')
         tick = event.dict_['data']
         self.tickDict[tick.vtSymbol] = tick
 
     def processContractEvent(self, event):
-        self.log.debug('处理合约事件')
+        # 使用常规代码（不包括交易所）可能导致重复
         contract = event.dict_['data']
         self.contractDict[contract.vtSymbol] = contract
-        self.contractDict[contract.symbol] = contract       # 使用常规代码（不包括交易所）可能导致重复
+        self.contractDict[contract.symbol] = contract
 
     def processOrderEvent(self, event):
         self.log.debug('处理委托事件')
@@ -83,7 +82,6 @@ class DataEngine(LoggingMixin):
     def processTradeEvent(self, event):
         self.log.debug('处理成交事件')
         trade = event.dict_['data']
-
         self.tradeDict[trade.vtTradeID] = trade
 
         # 更新到持仓细节中
@@ -93,10 +91,7 @@ class DataEngine(LoggingMixin):
     def processPositionEvent(self, event):
         self.log.debug('处理持仓事件')
         pos = event.dict_['data']
-
         self.positionDict[pos.vtPositionName] = pos
-
-        # 更新到持仓细节中
         detail = self.getPositionDetail(pos.vtSymbol)
         detail.updatePosition(pos)
 

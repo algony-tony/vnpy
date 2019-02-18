@@ -10,11 +10,10 @@ from vnpy.app.ctaStrategy.ctaTemplate import (CtaTemplate,
                                                      ArrayManager)
 
 
-########################################################################
 class MultiTimeframeStrategy(CtaTemplate):
     """跨时间周期交易策略"""
     className = 'MultiTimeframeStrategy'
-    author = u'用Python的交易员'
+    author = '用Python的交易员'
 
     # 策略参数
     rsiSignal = 20          # RSI信号阈值
@@ -57,7 +56,6 @@ class MultiTimeframeStrategy(CtaTemplate):
     # 同步列表，保存了需要保存到数据库的变量名称
     syncList = ['pos']
 
-    #----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):
         """Constructor"""
         super(MultiTimeframeStrategy, self).__init__(ctaEngine, setting)
@@ -72,10 +70,9 @@ class MultiTimeframeStrategy(CtaTemplate):
         self.bg15 = BarGenerator(self.onBar, 15, self.on15MinBar)
         self.am15 = ArrayManager()
 
-    #----------------------------------------------------------------------
     def onInit(self):
         """初始化策略（必须由用户继承实现）"""
-        self.writeCtaLog(u'%s策略初始化' %self.name)
+        self.writeLog('%s策略初始化' %self.name)
 
         # 载入历史数据，并采用回放计算的方式初始化策略数值
         initData = self.loadBar(self.initDays)
@@ -84,25 +81,21 @@ class MultiTimeframeStrategy(CtaTemplate):
 
         self.putEvent()
 
-    #----------------------------------------------------------------------
     def onStart(self):
         """启动策略（必须由用户继承实现）"""
-        self.writeCtaLog(u'%s策略启动' %self.name)
+        self.writeLog('%s策略启动' %self.name)
         self.putEvent()
 
-    #----------------------------------------------------------------------
     def onStop(self):
         """停止策略（必须由用户继承实现）"""
-        self.writeCtaLog(u'%s策略停止' %self.name)
+        self.writeLog('%s策略停止' %self.name)
         self.putEvent()
 
-    #----------------------------------------------------------------------
     def onTick(self, tick):
         """收到行情TICK推送（必须由用户继承实现）"""
         # 只需要要在一个BarGenerator中合成1分钟K线
         self.bg5.updateTick(tick)
 
-    #----------------------------------------------------------------------
     def onBar(self, bar):
         """收到Bar推送（必须由用户继承实现）"""
         # 基于15分钟判断趋势过滤，因此先更新
@@ -111,7 +104,6 @@ class MultiTimeframeStrategy(CtaTemplate):
         # 基于5分钟判断
         self.bg5.updateBar(bar)
 
-    #----------------------------------------------------------------------
     def on5MinBar(self, bar):
         """5分钟K线"""
         self.cancelAll()
@@ -151,7 +143,6 @@ class MultiTimeframeStrategy(CtaTemplate):
         # 发出状态更新事件
         self.putEvent()
 
-    #----------------------------------------------------------------------
     def on15MinBar(self, bar):
         """15分钟K线推送"""
         self.am15.updateBar(bar)
@@ -168,17 +159,14 @@ class MultiTimeframeStrategy(CtaTemplate):
         else:
             self.maTrend = -1
 
-    #----------------------------------------------------------------------
     def onOrder(self, order):
         """收到委托变化推送（必须由用户继承实现）"""
         pass
 
-    #----------------------------------------------------------------------
     def onTrade(self, trade):
         # 发出状态更新事件
         self.putEvent()
 
-    #----------------------------------------------------------------------
     def onStopOrder(self, so):
         """停止单推送"""
         pass

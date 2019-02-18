@@ -24,11 +24,10 @@ from vnpy.app.ctaStrategy.ctaTemplate import (CtaTemplate,
                                                      ArrayManager)
 
 
-########################################################################
 class BollChannelStrategy(CtaTemplate):
     """基于布林通道的交易策略"""
     className = 'BollChannelStrategy'
-    author = u'用Python的交易员'
+    author = '用Python的交易员'
 
     # 策略参数
     bollWindow = 18                     # 布林通道窗口数
@@ -81,7 +80,6 @@ class BollChannelStrategy(CtaTemplate):
                 'intraTradeHigh',
                 'intraTradeLow']
 
-    #----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):
         """Constructor"""
         super(BollChannelStrategy, self).__init__(ctaEngine, setting)
@@ -89,10 +87,9 @@ class BollChannelStrategy(CtaTemplate):
         self.bg = BarGenerator(self.onBar, 15, self.onXminBar)        # 创建K线合成器对象
         self.am = ArrayManager()
 
-    #----------------------------------------------------------------------
     def onInit(self):
         """初始化策略（必须由用户继承实现）"""
-        self.writeCtaLog(u'%s策略初始化' %self.name)
+        self.writeLog('%s策略初始化' %self.name)
 
         # 载入历史数据，并采用回放计算的方式初始化策略数值
         initData = self.loadBar(self.initDays)
@@ -101,29 +98,24 @@ class BollChannelStrategy(CtaTemplate):
 
         self.putEvent()
 
-    #----------------------------------------------------------------------
     def onStart(self):
         """启动策略（必须由用户继承实现）"""
-        self.writeCtaLog(u'%s策略启动' %self.name)
+        self.writeLog('%s策略启动' %self.name)
         self.putEvent()
 
-    #----------------------------------------------------------------------
     def onStop(self):
         """停止策略（必须由用户继承实现）"""
-        self.writeCtaLog(u'%s策略停止' %self.name)
+        self.writeLog('%s策略停止' %self.name)
         self.putEvent()
 
-    #----------------------------------------------------------------------
     def onTick(self, tick):
         """收到行情TICK推送（必须由用户继承实现）"""
         self.bg.updateTick(tick)
 
-    #----------------------------------------------------------------------
     def onBar(self, bar):
         """收到Bar推送（必须由用户继承实现）"""
         self.bg.updateBar(bar)
 
-    #----------------------------------------------------------------------
     def onXminBar(self, bar):
         """收到X分钟K线"""
         # 全撤之前发出的委托
@@ -177,18 +169,15 @@ class BollChannelStrategy(CtaTemplate):
         # 发出状态更新事件
         self.putEvent()
 
-    #----------------------------------------------------------------------
     def onOrder(self, order):
         """收到委托变化推送（必须由用户继承实现）"""
         pass
 
-    #----------------------------------------------------------------------
     def onTrade(self, trade):
         """成交推送"""
         # 发出状态更新事件
         self.putEvent()
 
-    #----------------------------------------------------------------------
     def onStopOrder(self, so):
         """停止单推送"""
         pass
