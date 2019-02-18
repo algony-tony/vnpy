@@ -45,25 +45,26 @@ class DataEngine(LoggingMixin):
         self.registerEvent()
 
     def registerEvent(self):
-        self.eventEngine.register(EVENT_TICK, self.processTickEvent)
-        self.eventEngine.register(EVENT_CONTRACT, self.processContractEvent)
-        self.eventEngine.register(EVENT_ORDER, self.processOrderEvent)
-        self.eventEngine.register(EVENT_TRADE, self.processTradeEvent)
-        self.eventEngine.register(EVENT_POSITION, self.processPositionEvent)
-        self.eventEngine.register(EVENT_ACCOUNT, self.processAccountEvent)
+        self.eventEngine.register(EVENT_TICK, self.UpdateTickDictFromEvent)
+        self.eventEngine.register(EVENT_CONTRACT, self.UpdateContractDictFromEvent)
+        self.eventEngine.register(EVENT_ORDER, self.UpdateOrderDictFromEvent)
+        self.eventEngine.register(EVENT_TRADE, self.UpdateTradeDictFromEvent)
+        self.eventEngine.register(EVENT_POSITION, self.UpdatePositionDictFromEvent)
+        self.eventEngine.register(EVENT_ACCOUNT, self.UpdateAccountDictFromEvent)
 
-    def processTickEvent(self, event):
+    def UpdateTickDictFromEvent(self, event):
         tick = event.dict_['data']
         self.tickDict[tick.vtSymbol] = tick
 
-    def processContractEvent(self, event):
+    def UpdateContractDictFromEvent(self, event):
+        self.log.debug('UpdateContractDictFromEvent')
         # 使用常规代码（不包括交易所）可能导致重复
         contract = event.dict_['data']
         self.contractDict[contract.vtSymbol] = contract
         self.contractDict[contract.symbol] = contract
 
-    def processOrderEvent(self, event):
-        self.log.debug('处理委托事件')
+    def UpdateOrderDictFromEvent(self, event):
+        self.log.debug('UpdateOrderDictFromEvent')
         order = event.dict_['data']
         self.orderDict[order.vtOrderID] = order
 
@@ -79,8 +80,8 @@ class DataEngine(LoggingMixin):
         detail = self.getPositionDetail(order.vtSymbol)
         detail.updateOrder(order)
 
-    def processTradeEvent(self, event):
-        self.log.debug('处理成交事件')
+    def UpdateTradeDictFromEvent(self, event):
+        self.log.debug('UpdateTradeDictFromEvent')
         trade = event.dict_['data']
         self.tradeDict[trade.vtTradeID] = trade
 
@@ -88,15 +89,15 @@ class DataEngine(LoggingMixin):
         detail = self.getPositionDetail(trade.vtSymbol)
         detail.updateTrade(trade)
 
-    def processPositionEvent(self, event):
-        self.log.debug('处理持仓事件')
+    def UpdatePositionDictFromEvent(self, event):
+        self.log.debug('UpdatePositionDictFromEvent')
         pos = event.dict_['data']
         self.positionDict[pos.vtPositionName] = pos
         detail = self.getPositionDetail(pos.vtSymbol)
         detail.updatePosition(pos)
 
-    def processAccountEvent(self, event):
-        self.log.debug('处理账户事件')
+    def UpdateAccountDictFromEvent(self, event):
+        self.log.debug('添加账号 {acc}'.format(acc=account.vtAccountID))
         account = event.dict_['data']
         self.accountDict[account.vtAccountID] = account
 

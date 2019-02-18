@@ -271,7 +271,6 @@ class CtpMdApi(MdApi):
         if symbol not in symbolExchangeDict:
             return
 
-        # 创建对象
         tick = TickData()
         tick.gatewayName = self.gatewayName
 
@@ -654,11 +653,9 @@ class CtpTdApi(TdApi):
         account = AccountData()
         account.gatewayName = self.gatewayName
 
-        # 账户代码
         account.accountID = data['AccountID']
         account.vtAccountID = '.'.join([self.gatewayName, account.accountID])
 
-        # 数值相关
         account.preBalance = data['PreBalance']
         account.available = data['Available']
         account.commission = data['Commission']
@@ -672,7 +669,6 @@ class CtpTdApi(TdApi):
                            data['CloseProfit'] + data['PositionProfit'] + data['CashIn'] -
                            data['Commission'])
 
-        # 推送
         self.gateway.onAccount(account)
 
     def onRspQryInvestor(self, data, error, n, last):

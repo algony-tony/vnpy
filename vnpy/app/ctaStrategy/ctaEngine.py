@@ -378,7 +378,6 @@ class CtaEngine(AppEngine):
             self.writeLog('载入策略出错: %s' %msg)
             return
 
-        # 获取策略类
         strategyClass = STRATEGY_CLASS.get(className, None)
         if not strategyClass:
             self.writeLog('找不到策略类: %s' %className)
