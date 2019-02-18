@@ -9,7 +9,6 @@ from vnpy.bin.mainEngine import MainEngine
 from vnpy.utility.eventEngine import EventEngine2
 from vnpy.gateway import ctpGateway
 from vnpy.app import ctaStrategy
-from vnpy.app.ctaStrategy.ctaBase import EVENT_CTA_LOG
 
 
 
@@ -19,7 +18,7 @@ def processErrorEvent(event):
     错误信息在每次登陆后，会将当日所有已产生的均推送一遍，所以不适合写入日志
     """
     error = event.dict_['data']
-    print('错误代码：%s，错误信息：%s' %(error.errorID, error.errorMsg))
+    print('错误代码: %s, 错误信息: %s' %(error.errorID, error.errorMsg))
 
 def runChildProcess():
     """子进程运行函数"""
@@ -37,13 +36,8 @@ def runChildProcess():
     cta = me.getApp(ctaStrategy.appName)
 
     cta.loadSetting()
-    print('CTA策略载入成功')
-
     cta.initAll()
-    print('CTA策略初始化成功')
-
     cta.startAll()
-    print('CTA策略启动成功')
 
     while True:
         sleep(1)
