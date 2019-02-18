@@ -282,7 +282,8 @@ class CtpMdApi(MdApi):
         tick.lastPrice = data['LastPrice']
         tick.volume = data['Volume']
         tick.openInterest = data['OpenInterest']
-        tick.time = '.'.join([data['UpdateTime'], str(data['UpdateMillisec']/100)])
+        tick.time = '.'.join([data['UpdateTime'], str(data['UpdateMillisec'])])
+        # tick.time = '.'.join([data['UpdateTime'], str(data['UpdateMillisec']/100)])
 
         # 上期所和郑商所可以直接使用，大商所需要转换
         tick.date = data['ActionDay']
