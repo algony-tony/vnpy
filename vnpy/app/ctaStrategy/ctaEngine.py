@@ -212,7 +212,7 @@ class CtaEngine(AppEngine):
             strategy.onStopOrder(so)
 
     def processStopOrder(self, tick):
-        """收到行情后处理本地停止单（检查是否要立即发出）"""
+        """收到行情后处理本地停止单(检查是否要立即发出)"""
         vtSymbol = tick.vtSymbol
 
         # 首先检查是否有策略交易该合约
@@ -260,14 +260,13 @@ class CtaEngine(AppEngine):
         tick = event.dict_['data']
         tick = copy(tick)
 
-        # 收到tick行情后，先处理本地停止单（检查是否要立即发出）
+        # 收到tick行情后, 先处理本地停止单(检查是否要立即发出)
         self.processStopOrder(tick)
 
         # 推送tick到对应的策略实例进行处理
         if tick.vtSymbol in self.tickStrategyDict:
-            # tick时间可能出现异常数据，使用try...except实现捕捉和过滤
+            # tick时间可能出现异常数据
             try:
-                # 添加datetime字段
                 if not tick.datetime:
                     tick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S.%f')
             except ValueError:
