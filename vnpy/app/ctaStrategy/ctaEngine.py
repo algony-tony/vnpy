@@ -270,6 +270,8 @@ class CtaEngine(AppEngine):
                 if not tick.datetime:
                     tick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S.%f')
             except ValueError:
+                self.writeLog('tick.date: ' + str(tick.date))
+                self.writeLog('tick.time: ' + str(tick.time))
                 self.writeLog(traceback.format_exc())
                 return
 

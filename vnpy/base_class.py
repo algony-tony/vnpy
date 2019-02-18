@@ -90,7 +90,7 @@ class TickData(BaseData):
         tick.openInterest = openInterest
         tick.datetime = datetime.now()
         tick.date = tick.datetime.strftime('%Y%m%d')
-        tick.time = tick.datetime.strftime('%H:%M:%S')
+        tick.time = tick.datetime.strftime('%H:%M:%S.%f')
 
         tick.openPrice = openPrice
         tick.highPrice = highPrice
