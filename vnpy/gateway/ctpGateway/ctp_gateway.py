@@ -17,7 +17,7 @@ from vnpy.vtEvent import *
 from vnpy.vtConstant import *
 from vnpy.config import gatewayconfig
 from vnpy.utility.file import getTempPath
-from vnpy.gateway.base_gateway import BaseGateway
+from vnpy.gateway.base_gateway import *
 from vnpy.gateway.ctpGateway.vnctpmd import MdApi
 from vnpy.gateway.ctpGateway.vnctptd import TdApi
 from vnpy.gateway.ctpGateway.ctp_data_type import defineDict
