@@ -13,6 +13,7 @@ from pymongo.errors import ConnectionFailure
 
 from vnpy.config import globalSetting
 from vnpy.vtEvent import *
+from vnpy.vtConstant import *
 from vnpy.utility.file import getTempPath
 from vnpy.utility.logging_mixin import LoggingMixin
 
@@ -24,7 +25,7 @@ class DataEngine(LoggingMixin):
     FINISHED_STATUS = ['全部成交', '拒单', '已撤销']
 
     def __init__(self, eventEngine):
-        """Constructor"""
+        self.log.debug('DataEngine initing...')
         self.eventEngine = eventEngine
 
         self.tickDict = {}
@@ -44,7 +45,6 @@ class DataEngine(LoggingMixin):
         self.registerEvent()
 
     def registerEvent(self):
-        """注册事件监听"""
         self.eventEngine.register(EVENT_TICK, self.processTickEvent)
         self.eventEngine.register(EVENT_CONTRACT, self.processContractEvent)
         self.eventEngine.register(EVENT_ORDER, self.processOrderEvent)
@@ -53,18 +53,18 @@ class DataEngine(LoggingMixin):
         self.eventEngine.register(EVENT_ACCOUNT, self.processAccountEvent)
 
     def processTickEvent(self, event):
-        """处理成交事件"""
+        self.log.debug('处理成交事件')
         tick = event.dict_['data']
         self.tickDict[tick.vtSymbol] = tick
 
     def processContractEvent(self, event):
-        """处理合约事件"""
+        self.log.debug('处理合约事件')
         contract = event.dict_['data']
         self.contractDict[contract.vtSymbol] = contract
         self.contractDict[contract.symbol] = contract       # 使用常规代码（不包括交易所）可能导致重复
 
     def processOrderEvent(self, event):
-        """处理委托事件"""
+        self.log.debug('处理委托事件')
         order = event.dict_['data']
         self.orderDict[order.vtOrderID] = order
 
@@ -81,7 +81,7 @@ class DataEngine(LoggingMixin):
         detail.updateOrder(order)
 
     def processTradeEvent(self, event):
-        """处理成交事件"""
+        self.log.debug('处理成交事件')
         trade = event.dict_['data']
 
         self.tradeDict[trade.vtTradeID] = trade
@@ -91,7 +91,7 @@ class DataEngine(LoggingMixin):
         detail.updateTrade(trade)
 
     def processPositionEvent(self, event):
-        """处理持仓事件"""
+        self.log.debug('处理持仓事件')
         pos = event.dict_['data']
 
         self.positionDict[pos.vtPositionName] = pos
@@ -101,35 +101,34 @@ class DataEngine(LoggingMixin):
         detail.updatePosition(pos)
 
     def processAccountEvent(self, event):
-        """处理账户事件"""
+        self.log.debug('处理账户事件')
         account = event.dict_['data']
         self.accountDict[account.vtAccountID] = account
 
     def getTick(self, vtSymbol):
-        """查询行情对象"""
         try:
             return self.tickDict[vtSymbol]
         except KeyError:
             return None
 
     def getContract(self, vtSymbol):
-        """查询合约对象"""
+        self.log.debug('查询合约对象')
         try:
             return self.contractDict[vtSymbol]
         except KeyError:
             return None
 
     def getAllContracts(self):
-        """查询所有合约对象（返回列表）"""
+        self.log.debug('查询所有合约对象')
         return self.contractDict.values()
 
     def saveContracts(self):
-        """保存所有合约对象到硬盘"""
+        self.log.debug('保存所有合约对象到硬盘')
         with shelve.open(self.contractFilePath) as f:
             f['data'] = self.contractDict
 
     def loadContracts(self):
-        """从硬盘读取合约对象"""
+        self.log.debug('从硬盘读取合约对象')
         with shelve.open(self.contractFilePath) as f:
             if 'data' in f:
                 d = f['data']
@@ -137,34 +136,34 @@ class DataEngine(LoggingMixin):
                     self.contractDict[key] = value
 
     def getOrder(self, vtOrderID):
-        """查询委托"""
+        self.log.debug('查询委托')
         try:
             return self.orderDict[vtOrderID]
         except KeyError:
             return None
 
     def getAllWorkingOrders(self):
-        """查询所有活动委托（返回列表）"""
+        self.log.debug('查询所有活动委托（返回列表）')
         return self.workingOrderDict.values()
 
     def getAllOrders(self):
-        """获取所有委托"""
+        self.log.debug('获取所有委托')
         return self.orderDict.values()
 
     def getAllTrades(self):
-        """获取所有成交"""
+        self.log.debug('获取所有成交')
         return self.tradeDict.values()
 
     def getAllPositions(self):
-        """获取所有持仓"""
+        self.log.debug('获取所有持仓')
         return self.positionDict.values()
 
     def getAllAccounts(self):
-        """获取所有资金"""
+        self.log.debug('获取所有资金')
         return self.accountDict.values()
 
     def getPositionDetail(self, vtSymbol):
-        """查询持仓细节"""
+        self.log.debug('查询持仓细节')
         if vtSymbol in self.detailDict:
             detail = self.detailDict[vtSymbol]
         else:
@@ -190,18 +189,18 @@ class DataEngine(LoggingMixin):
         return detail
 
     def getAllPositionDetails(self):
-        """查询所有本地持仓缓存细节"""
+        self.log.debug('查询所有本地持仓缓存细节')
         return self.detailDict.values()
 
     def updateOrderReq(self, req, vtOrderID):
-        """委托请求更新"""
+        self.log.debug('委托请求更新')
         vtSymbol = req.vtSymbol
 
         detail = self.getPositionDetail(vtSymbol)
         detail.updateOrderReq(req, vtOrderID)
 
     def convertOrderReq(self, req):
-        """根据规则转换委托请求"""
+        self.log.debug('根据规则转换委托请求')
         detail = self.detailDict.get(req.vtSymbol, None)
         if not detail:
             return [req]
@@ -209,16 +208,15 @@ class DataEngine(LoggingMixin):
             return detail.convertOrderReq(req)
 
 
-class PositionDetail(object):
+class PositionDetail(LoggingMixin):
     """本地维护的持仓信息"""
-    WORKING_STATUS = [ '未知',  '未成交',  '部分成交']
+    WORKING_STATUS = ['未知', '未成交', '部分成交']
 
     MODE_NORMAL = 'normal'          # 普通模式
     MODE_SHFE = 'shfe'              # 上期所今昨分别平仓
     MODE_TDPENALTY = 'tdpenalty'    # 平今惩罚
 
     def __init__(self, vtSymbol, contract=None):
-        """Constructor"""
         self.vtSymbol = vtSymbol
         self.symbol = ''
         self.exchange = ''
@@ -257,7 +255,7 @@ class PositionDetail(object):
         self.workingOrderDict = {}
 
     def updateTrade(self, trade):
-        """成交更新"""
+        self.log.debug('成交更新')
         # 多头
         if trade.direction is DIRECTION_LONG:
             # 开仓
@@ -311,7 +309,7 @@ class PositionDetail(object):
         self.calculatePnl()
 
     def updateOrder(self, order):
-        """委托更新"""
+        self.log.debug('委托更新')
         # 将活动委托缓存下来
         if order.status in self.WORKING_STATUS:
             self.workingOrderDict[order.vtOrderID] = order
@@ -325,7 +323,7 @@ class PositionDetail(object):
         self.calculateFrozen()
 
     def updatePosition(self, pos):
-        """持仓更新"""
+        self.log.debug('持仓更新')
         if pos.direction is DIRECTION_LONG:
             self.longPos = pos.position
             self.longYd = pos.ydPosition
@@ -340,7 +338,7 @@ class PositionDetail(object):
             self.shortPrice = pos.price
 
     def updateOrderReq(self, req, vtOrderID):
-        """发单更新"""
+        self.log.debug('发单更新')
         vtSymbol = req.vtSymbol
 
         # 基于请求生成委托对象
@@ -360,17 +358,16 @@ class PositionDetail(object):
         self.calculateFrozen()
 
     def updateTick(self, tick):
-        """行情更新"""
         self.lastPrice = tick.lastPrice
         self.calculatePnl()
 
     def calculatePnl(self):
-        """计算持仓盈亏"""
+        self.log.debug('计算持仓盈亏')
         self.longPnl = self.longPos * (self.lastPrice - self.longPrice) * self.size
         self.shortPnl = self.shortPos * (self.shortPrice - self.lastPrice) * self.size
 
     def calculatePrice(self, trade):
-        """计算持仓均价（基于成交数据）"""
+        self.log.debug('计算持仓均价(基于成交数据)')
         # 只有开仓会影响持仓均价
         if trade.offset == OFFSET_OPEN:
             if trade.direction == DIRECTION_LONG:
@@ -391,12 +388,12 @@ class PositionDetail(object):
                     self.shortPrice = 0
 
     def calculatePosition(self):
-        """计算持仓情况"""
+        self.log.debug('计算持仓情况')
         self.longPos = self.longTd + self.longYd
         self.shortPos = self.shortTd + self.shortYd
 
     def calculateFrozen(self):
-        """计算冻结情况"""
+        self.log.debug('计算冻结情况')
         # 清空冻结数据
         self.longPosFrozen = 0
         self.longYdFrozen = 0
@@ -446,7 +443,7 @@ class PositionDetail(object):
             self.shortPosFrozen = self.shortYdFrozen + self.shortTdFrozen
 
     def convertOrderReq(self, req):
-        """转换委托请求"""
+        self.log.debug('转换委托请求')
         # 普通模式无需转换
         if self.mode is self.MODE_NORMAL:
             return [req]

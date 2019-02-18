@@ -22,11 +22,9 @@ class MainEngine(LoggingMixin):
     def __init__(self, eventEngine):
         self.todayDate = datetime.now().strftime('%Y%m%d')
 
-        # 绑定事件引擎
         self.eventEngine = eventEngine
         self.eventEngine.start()
 
-        # 创建数据引擎
         self.dataEngine = DataEngine(self.eventEngine)
 
         # MongoDB数据库相关
@@ -46,7 +44,6 @@ class MainEngine(LoggingMixin):
     def addGateway(self, gatewayModule):
         """添加底层接口"""
         gatewayName = gatewayModule.gatewayName
-
         self.gatewayDict[gatewayName] = \
                 gatewayModule.gatewayClass(self.eventEngine, gatewayName)
 
@@ -63,7 +60,6 @@ class MainEngine(LoggingMixin):
     def addApp(self, appModule):
         """添加上层应用"""
         appName = appModule.appName
-
         self.appDict[appName] = \
                 appModule.appEngine(self, self.eventEngine)
 
@@ -72,8 +68,6 @@ class MainEngine(LoggingMixin):
         d = {
             'appName': appModule.appName,
             'appDisplayName': appModule.appDisplayName,
-            'appWidget': appModule.appWidget,
-            'appIco': appModule.appIco
         }
         self.appDetailList.append(d)
 

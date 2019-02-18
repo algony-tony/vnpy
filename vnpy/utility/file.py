@@ -60,7 +60,7 @@ def loadIconPath(iconName):
 
 def getTempPath(name):
     """获取存放临时文件的路径"""
-    tempPath = globalSetting['tempDir']
+    tempPath = os.path.expanduser(globalSetting['tempDir'])
     path = os.path.join(tempPath, name)
     return path
 

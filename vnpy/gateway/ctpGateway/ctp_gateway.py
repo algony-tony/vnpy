@@ -91,7 +91,6 @@ class ctpGateway(BaseGateway):
     """CTP接口"""
 
     def __init__(self, eventEngine, gatewayName='CTP'):
-        """Constructor"""
         super(ctpGateway, self).__init__(eventEngine, gatewayName)
 
         self.mdApi = CtpMdApi(self)     # 行情API
@@ -132,27 +131,21 @@ class ctpGateway(BaseGateway):
         self.initQuery()
 
     def subscribe(self, subscribeReq):
-        """订阅行情"""
         self.mdApi.subscribe(subscribeReq)
 
     def sendOrder(self, orderReq):
-        """发单"""
         return self.tdApi.sendOrder(orderReq)
 
     def cancelOrder(self, cancelOrderReq):
-        """撤单"""
         self.tdApi.cancelOrder(cancelOrderReq)
 
     def qryAccount(self):
-        """查询账户资金"""
         self.tdApi.qryAccount()
 
     def qryPosition(self):
-        """查询持仓"""
         self.tdApi.qryPosition()
 
     def close(self):
-        """关闭"""
         if self.mdConnected:
             self.mdApi.close()
         if self.tdConnected:
@@ -238,12 +231,7 @@ class CtpMdApi(MdApi):
         pass
 
     def onRspError(self, error, n, last):
-        """错误回报"""
-        err = ErrorData()
-        err.gatewayName = self.gatewayName
-        err.errorID = error['ErrorID']
-        err.errorMsg = error['ErrorMsg']
-        self.gateway.onError(err)
+        self.writeErrorLog(error['ErrorID'], error['ErrorMsg'])
 
     def onRspUserLogin(self, data, error, n, last):
         """登陆回报"""
@@ -256,11 +244,7 @@ class CtpMdApi(MdApi):
             for subscribeReq in self.subscribedSymbols:
                 self.subscribe(subscribeReq)
         else:
-            err = ErrorData()
-            err.gatewayName = self.gatewayName
-            err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg']
-            self.gateway.onError(err)
+            self.writeErrorLog(error['ErrorID'], error['ErrorMsg'])
 
     def onRspUserLogout(self, data, error, n, last):
         """登出回报"""
@@ -269,24 +253,15 @@ class CtpMdApi(MdApi):
             self.gateway.mdConnected = False
             self.writeLog('行情服务器登出完成')
         else:
-            err = ErrorData()
-            err.gatewayName = self.gatewayName
-            err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg']
-            self.gateway.onError(err)
+            self.writeErrorLog(error['ErrorID'], error['ErrorMsg'])
 
     def onRspSubMarketData(self, data, error, n, last):
         """订阅合约回报"""
         if 'ErrorID' in error and error['ErrorID']:
-            err = ErrorData()
-            err.gatewayName = self.gatewayName
-            err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg']
-            self.gateway.onError(err)
+            self.writeErrorLog(error['ErrorID'], error['ErrorMsg'])
 
     def onRspUnSubMarketData(self, data, error, n, last):
         """退订合约回报"""
-        # 同上
         pass
 
     def onRtnDepthMarketData(self, data):
@@ -393,6 +368,7 @@ class CtpMdApi(MdApi):
         # 则先保存订阅请求，登录完成后会自动订阅
         if self.loginStatus:
             self.subscribeMarketData(str(subscribeReq.symbol))
+            self.writeLog('Subscribe {sy}'.format(sy=str(subscribeReq.symbol)))
         self.subscribedSymbols.add(subscribeReq)
 
     def login(self):
@@ -409,6 +385,9 @@ class CtpMdApi(MdApi):
 
     def writeLog(self, content):
         self.gateway.log.info(content)
+
+    def writeErrorLog(self, errid, errmsg):
+        self.gateway.log.info('Error {id}: {msg}'.format(id=errid, msg=errmsg))
 
 
 class CtpTdApi(TdApi):
@@ -475,11 +454,7 @@ class CtpTdApi(TdApi):
 
             self.login()
         else:
-            err = ErrorData()
-            err.gatewayName = self.gatewayName
-            err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg']
-            self.gateway.onError(err)
+            self.writeErrorLog(error['ErrorID'], error['ErrorMsg'])
 
     def onRspUserLogin(self, data, error, n, last):
         """登陆回报"""
@@ -501,11 +476,7 @@ class CtpTdApi(TdApi):
 
         # 否则，推送错误信息
         else:
-            err = ErrorData()
-            err.gatewayName = self.gatewayName
-            err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg']
-            self.gateway.onError(err)
+            self.writeErrorLog(error['ErrorID'], error['ErrorMsg'])
 
             # 标识登录失败，防止用错误信息连续重复登录
             self.loginFailed =  True
@@ -521,11 +492,7 @@ class CtpTdApi(TdApi):
 
         # 否则，推送错误信息
         else:
-            err = ErrorData()
-            err.gatewayName = self.gatewayName
-            err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg']
-            self.gateway.onError(err)
+            self.writeErrorLog(error['ErrorID'], error['ErrorMsg'])
 
     def onRspUserPasswordUpdate(self, data, error, n, last):
         """"""
@@ -553,11 +520,7 @@ class CtpTdApi(TdApi):
         self.gateway.onOrder(order)
 
         # 推送错误信息
-        err = ErrorData()
-        err.gatewayName = self.gatewayName
-        err.errorID = error['ErrorID']
-        err.errorMsg = error['ErrorMsg']
-        self.gateway.onError(err)
+        self.writeErrorLog(error['ErrorID'], error['ErrorMsg'])
 
     def onRspParkedOrderInsert(self, data, error, n, last):
         """"""
@@ -569,11 +532,7 @@ class CtpTdApi(TdApi):
 
     def onRspOrderAction(self, data, error, n, last):
         """撤单错误（柜台）"""
-        err = ErrorData()
-        err.gatewayName = self.gatewayName
-        err.errorID = error['ErrorID']
-        err.errorMsg = error['ErrorMsg']
-        self.gateway.onError(err)
+        self.writeErrorLog(error['ErrorID'], error['ErrorMsg'])
 
     def onRspQueryMaxOrderVolume(self, data, error, n, last):
         """"""
@@ -900,12 +859,7 @@ class CtpTdApi(TdApi):
         pass
 
     def onRspError(self, error, n, last):
-        """错误回报"""
-        err = ErrorData()
-        err.gatewayName = self.gatewayName
-        err.errorID = error['ErrorID']
-        err.errorMsg = error['ErrorMsg']
-        self.gateway.onError(err)
+        self.writeErrorLog(error['ErrorID'], error['ErrorMsg'])
 
     def onRtnOrder(self, data):
         """报单回报"""
@@ -994,19 +948,11 @@ class CtpTdApi(TdApi):
         self.gateway.onOrder(order)
 
         # 推送错误信息
-        err = ErrorData()
-        err.gatewayName = self.gatewayName
-        err.errorID = error['ErrorID']
-        err.errorMsg = error['ErrorMsg']
-        self.gateway.onError(err)
+        self.writeErrorLog(error['ErrorID'], error['ErrorMsg'])
 
     def onErrRtnOrderAction(self, data, error):
         """撤单错误回报（交易所）"""
-        err = ErrorData()
-        err.gatewayName = self.gatewayName
-        err.errorID = error['ErrorID']
-        err.errorMsg = error['ErrorMsg']
-        self.gateway.onError(err)
+        self.writeErrorLog(error['ErrorID'], error['ErrorMsg'])
 
     def onRtnInstrumentStatus(self, data):
         """"""
@@ -1329,4 +1275,6 @@ class CtpTdApi(TdApi):
     def writeLog(self, content):
         self.gateway.log.info(content)
 
+    def writeErrorLog(self, errid, errmsg):
+        self.gateway.log.info('Error {id}: {msg}'.format(id=errid, msg=errmsg))
 

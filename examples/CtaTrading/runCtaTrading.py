@@ -26,8 +26,6 @@ def runChildProcess():
     print("--- runChildProcess ---")
 
     ee = EventEngine2()
-    print('EventEngine2 finished.')
-
     me = MainEngine(ee)
     me.addGateway(ctpGateway)
     me.addApp(ctaStrategy)

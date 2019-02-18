@@ -326,32 +326,6 @@ class AccountData(BaseData):
         self.positionProfit = 0.0       # 持仓盈亏
 
 
-class ErrorData(BaseData):
-    """错误数据类"""
-
-    def __init__(self):
-        """Constructor"""
-        super(ErrorData, self).__init__()
-
-        self.errorID = ''             # 错误代码
-        self.errorMsg = ''           # 错误信息
-        self.additionalInfo = ''     # 补充信息
-
-        self.errorTime = time.strftime('%X', time.localtime())    # 错误生成时间
-
-
-class LogData(BaseData):
-    """日志数据类"""
-
-    def __init__(self):
-        """Constructor"""
-        super(LogData, self).__init__()
-
-        self.logTime = time.strftime('%X', time.localtime())    # 日志生成时间
-        self.logContent = ''                         # 日志信息
-        self.logLevel = INFO                                    # 日志级别
-
-
 class ContractData(BaseData):
     """合约详细信息类"""
 

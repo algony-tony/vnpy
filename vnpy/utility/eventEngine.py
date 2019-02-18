@@ -166,6 +166,7 @@ class EventEngine2(LoggingMixin):
             self.__timerSleep = 1
         else:
             self.__timerSleep = SleepInterval
+        self.log.debug('Timer Interval {ti}s'.format(ti=self.__timerSleep))
 
         # __handlers 保存对应的事件调用关系
         # key: 事件名
@@ -205,23 +206,16 @@ class EventEngine2(LoggingMixin):
         引擎启动
         timer：是否要启动计时器
         """
-        # 将引擎设为启动
+        self.log.debug('EventEngine2 start')
         self.__active = True
-
-        # 启动事件处理线程
         self.__thread.start()
-
-        # 启动计时器，计时器事件间隔默认设定为1秒
         if timer:
             self.__timerActive = True
             self.__timer.start()
 
     def stop(self):
-        """停止引擎"""
-        # 将引擎设为停止
+        self.log.debug('EventEngine2 stop')
         self.__active = False
-
-        # 停止计时器
         self.__timerActive = False
         self.__timer.join()
 
@@ -236,10 +230,14 @@ class EventEngine2(LoggingMixin):
 
         if handler not in handlerList:
             handlerList.append(handler)
+            self.log.debug('Register {hd} for {tp}'.format(
+                hd=handler.__name__, tp=type_))
 
     def unregister(self, type_, handler):
         try:
             self.__handlers[type_].remove(handler)
+            self.log.debug('Unregister {hd} for {tp}'.format(
+                hd=handler.__name__, tp=type_))
         except ValueError:
             pass
 
@@ -249,11 +247,13 @@ class EventEngine2(LoggingMixin):
     def registerGeneralHandler(self, handler):
         if handler not in self.__generalHandlers:
             self.__generalHandlers.append(handler)
+            self.log.debug('Register General Handler {hd}'.format(hd=handler.__name__))
 
     def unregisterGeneralHandler(self, handler):
         # thread-safe way to remove element
         try:
             self.__generalHandlers.remove(handler)
+            self.log.debug('Unregister General Handler {hd}'.format(hd=handler.__name__))
         except ValueError:
             pass
 
