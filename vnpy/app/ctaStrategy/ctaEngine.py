@@ -364,9 +364,6 @@ class CtaEngine(AppEngine):
             l.append(tick)
         return l
 
-    def writeLog(self, content):
-        self.log.info(content)
-
     def loadStrategy(self, setting):
         """载入策略"""
         try:
@@ -427,8 +424,8 @@ class CtaEngine(AppEngine):
                 strategy.inited = True
                 self.callStrategyFunc(strategy, strategy.onInit)
 
-                self.loadSyncData(strategy)                             # 初始化完成后加载同步数据
-                self.subscribeMarketData(strategy)                      # 加载同步数据后再订阅行情
+                self.loadSyncData(strategy)         # 初始化完成后加载同步数据
+                self.subscribeMarketData(strategy)  # 加载同步数据后再订阅行情
             else:
                 self.writeLog('请勿重复初始化策略实例: %s' %name)
         else:
@@ -601,9 +598,8 @@ class CtaEngine(AppEngine):
         """取整价格到合约最小价格变动"""
         if not priceTick:
             return price
-
-        newPrice = round(price/priceTick, 0) * priceTick
-        return newPrice
+        else:
+            return round(price/priceTick, 0)*priceTick
 
     def stop(self):
         """停止"""
@@ -664,9 +660,7 @@ class CtaEngine(AppEngine):
                                fields=['open', 'high', 'low', 'close', 'volume'],
                                start_date=startDate,
                                end_date=endDate)
-
         l = []
-
         for ix, row in df.iterrows():
             bar = BarData()
             bar.symbol = symbol
@@ -683,3 +677,7 @@ class CtaEngine(AppEngine):
             l.append(bar)
 
         return l
+
+    def writeLog(self, content):
+        self.log.info(content)
+
