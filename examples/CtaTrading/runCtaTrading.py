@@ -11,7 +11,6 @@ from vnpy.gateway import ctpGateway
 from vnpy.app import ctaStrategy
 
 
-
 def processErrorEvent(event):
     """
     处理错误事件
@@ -24,17 +23,15 @@ def runChildProcess():
     """子进程运行函数"""
     print("--- runChildProcess ---")
 
-    ee = EventEngine2()
-    me = MainEngine(ee)
+    me = MainEngine()
     me.addGateway(ctpGateway)
     me.addApp(ctaStrategy)
-    me.connect('CTP')
+    me.connectGateway('CTP')
 
     sleep(10)                       # 等待CTP接口初始化
     me.dataEngine.saveContracts()   # 保存合约信息到文件
 
     cta = me.getApp(ctaStrategy.appName)
-
     cta.loadSetting()
     cta.initAll()
     cta.startAll()
@@ -44,11 +41,6 @@ def runChildProcess():
 
 def runParentProcess():
     """父进程运行函数"""
-    # 创建日志引擎
-    le = LogEngine()
-    le.setLogLevel(le.LEVEL_INFO)
-    le.addConsoleHandler()
-
     print('启动CTA策略守护父进程')
 
     DAY_START = time(8, 45)         # 日盘启动和停止时间

@@ -4,8 +4,8 @@ from __future__ import division
 
 import os
 import shelve
-from collections import OrderedDict
 from datetime import datetime
+from collections import OrderedDict
 from copy import copy
 
 from pymongo import MongoClient, ASCENDING
@@ -14,19 +14,19 @@ from pymongo.errors import ConnectionFailure
 from vnpy.vtEngine import DataEngine
 from vnpy.config import globalSetting
 from vnpy.utility.logging_mixin import LoggingMixin
+from vnpy.utility.eventEngine import EventEngine2
 
 
 class MainEngine(LoggingMixin):
     """主引擎"""
-    def __init__(self, eventEngine):
+    def __init__(self):
         self.todayDate = datetime.now().strftime('%Y%m%d')
 
-        self.eventEngine = eventEngine
+        self.eventEngine = EventEngine2()
         self.eventEngine.start()
 
         self.dataEngine = DataEngine(self.eventEngine)
 
-        # MongoDB数据库相关
         self.dbClient = None    # MongoDB客户端对象
 
         # 接口实例
@@ -41,7 +41,6 @@ class MainEngine(LoggingMixin):
         self.rmEngine = None
 
     def addGateway(self, gatewayModule):
-        """添加底层接口"""
         gatewayName = gatewayModule.gatewayName
         self.gatewayDict[gatewayName] = \
                 gatewayModule.gatewayClass(self.eventEngine, gatewayName)
@@ -57,7 +56,6 @@ class MainEngine(LoggingMixin):
         self.gatewayDetailList.append(d)
 
     def addApp(self, appModule):
-        """添加上层应用"""
         appName = appModule.appName
         self.appDict[appName] = \
                 appModule.appEngine(self, self.eventEngine)
@@ -70,19 +68,29 @@ class MainEngine(LoggingMixin):
         }
         self.appDetailList.append(d)
 
-    def getGateway(self, gatewayName):
-        """获取接口"""
-        if gatewayName in self.gatewayDict:
-            return self.gatewayDict[gatewayName]
+    def connectGateway(self, gatewayName=None):
+        # connect all gateways if not specified
+        if not gatewayName:
+            for k in self.gatewayDict.keys():
+                self.gatewayDict[k].connect()
         else:
-            self.writeLog('接口{gateway}不存在'.format(gateway=gatewayName))
+            self.getGateway(gatewayName).connect()
+
+        self.dbConnect()
+
+    def getGateway(self, gatewayName):
+        try:
+            return self.gatewayDict[gatewayName]
+        except:
+            self.writeLog('接口 {gateway} 不存在'.format(gateway=gatewayName))
             return None
 
-    def connect(self, gatewayName):
-        gateway = self.getGateway(gatewayName)
-        if gateway:
-            gateway.connect()
-        self.dbConnect()
+    def getApp(self, appName):
+        try:
+            return self.appDict[appName]
+        except:
+            self.writeLog('应用 {app} 不存在'.format(app=appName))
+            return None
 
     def subscribe(self, subscribeReq, gatewayName):
         gateway = self.getGateway(gatewayName)
@@ -125,25 +133,6 @@ class MainEngine(LoggingMixin):
 
         if gateway:
             gateway.qryPosition()
-
-    def exit(self):
-        """退出程序前调用，保证正常退出"""
-        # 安全关闭所有接口
-        for gateway in self.gatewayDict.values():
-            gateway.close()
-
-        # 停止事件引擎
-        self.eventEngine.stop()
-
-        # 停止上层应用引擎
-        for appEngine in self.appDict.values():
-            appEngine.stop()
-
-        # 保存数据引擎里的合约数据到硬盘
-        self.dataEngine.saveContracts()
-
-    def writeLog(self, content):
-        self.log.info(content)
 
     def dbConnect(self):
         """连接MongoDB数据库"""
@@ -260,11 +249,23 @@ class MainEngine(LoggingMixin):
         """查询引擎中所有上层应用的信息"""
         return self.appDetailList
 
-    def getApp(self, appName):
-        """获取APP引擎对象"""
-        return self.appDict[appName]
-
     def convertOrderReq(self, req):
         """转换委托请求"""
         return self.dataEngine.convertOrderReq(req)
+
+    def exit(self):
+        """退出程序前调用，保证正常退出"""
+        # 安全关闭所有接口
+        for gateway in self.gatewayDict.values():
+            gateway.close()
+
+        # 停止事件引擎
+        self.eventEngine.stop()
+
+        # 停止上层应用引擎
+        for appEngine in self.appDict.values():
+            appEngine.stop()
+
+    def writeLog(self, content):
+        self.log.info(content)
 
