@@ -2,7 +2,6 @@
 
 import time
 
-from vnpy.vtEvent import *
 from vnpy.vtConstant import *
 from vnpy.base_class import *
 from vnpy.utility.logging_mixin import LoggingMixin

@@ -13,7 +13,6 @@ import json
 from copy import copy
 from datetime import datetime, timedelta
 
-from vnpy.vtEvent import *
 from vnpy.vtConstant import *
 from vnpy.config import gatewayconfig
 from vnpy.utility.file import getTempPath

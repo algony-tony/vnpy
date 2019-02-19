@@ -13,9 +13,8 @@ from collections import OrderedDict
 from datetime import datetime, timedelta
 from copy import copy
 
-from vnpy.vtEvent import *
 from vnpy.vtConstant import *
-from vnpy.base_class import TickData, BarData
+from vnpy.base_class import Event, TickData, BarData
 from vnpy.base_class import SubscribeReq, OrderReq, CancelOrderReq
 from vnpy.vtFunction import todayDate, getJsonPath
 from vnpy.app import AppEngine

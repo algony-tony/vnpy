@@ -2,17 +2,11 @@
 
 from __future__ import division
 
-import os
 import shelve
-from collections import OrderedDict
-from datetime import datetime
+import json
 from copy import copy
 
-from pymongo import MongoClient, ASCENDING
-from pymongo.errors import ConnectionFailure
-
 from vnpy.config import globalSetting
-from vnpy.vtEvent import *
 from vnpy.vtConstant import *
 from vnpy.utility.file import getTempPath
 from vnpy.utility.logging_mixin import LoggingMixin
@@ -21,8 +15,9 @@ from vnpy.utility.logging_mixin import LoggingMixin
 class DataEngine(LoggingMixin):
     """数据引擎"""
     contractFilePath = getTempPath('ContractData.vt')
+    contractJSONFilePath = getTempPath('ContractData.json')
 
-    FINISHED_STATUS = ['全部成交', '拒单', '已撤销']
+    FINISHED_STATUS = [STATUS_ALLTRADED, STATUS_REJECTED, STATUS_CANCELLED]
 
     def __init__(self, eventEngine):
         self.log.debug('DataEngine initing...')
@@ -53,26 +48,30 @@ class DataEngine(LoggingMixin):
         self.eventEngine.register(EVENT_ACCOUNT, self.UpdateAccountDictFromEvent)
 
     def UpdateTickDictFromEvent(self, event):
+        # TickData
         tick = event.dict_['data']
         self.tickDict[tick.vtSymbol] = tick
 
     def UpdateContractDictFromEvent(self, event):
-        self.log.debug('UpdateContractDictFromEvent')
-        # 使用常规代码（不包括交易所）可能导致重复
+        # ContractData
+        # 使用常规代码(不包括交易所)可能导致重复
         contract = event.dict_['data']
         self.contractDict[contract.vtSymbol] = contract
         self.contractDict[contract.symbol] = contract
+        self.log.debug('UpdateContractDictFromEvent {con} {com}'.format(
+            con=contract.vtSymbol, com=contract.symbol
+        ))
 
     def UpdateOrderDictFromEvent(self, event):
+        # OrderData
         self.log.debug('UpdateOrderDictFromEvent')
         order = event.dict_['data']
         self.orderDict[order.vtOrderID] = order
 
-        # 如果订单的状态是全部成交或者撤销，则需要从workingOrderDict中移除
+        # 移除交易完成订单
         if order.status in self.FINISHED_STATUS:
             if order.vtOrderID in self.workingOrderDict:
                 del self.workingOrderDict[order.vtOrderID]
-        # 否则则更新字典中的数据
         else:
             self.workingOrderDict[order.vtOrderID] = order
 
@@ -81,6 +80,7 @@ class DataEngine(LoggingMixin):
         detail.updateOrder(order)
 
     def UpdateTradeDictFromEvent(self, event):
+        # TradeData
         self.log.debug('UpdateTradeDictFromEvent')
         trade = event.dict_['data']
         self.tradeDict[trade.vtTradeID] = trade
@@ -90,6 +90,7 @@ class DataEngine(LoggingMixin):
         detail.updateTrade(trade)
 
     def UpdatePositionDictFromEvent(self, event):
+        # PositionData
         self.log.debug('UpdatePositionDictFromEvent')
         pos = event.dict_['data']
         self.positionDict[pos.vtPositionName] = pos
@@ -97,9 +98,10 @@ class DataEngine(LoggingMixin):
         detail.updatePosition(pos)
 
     def UpdateAccountDictFromEvent(self, event):
-        self.log.debug('添加账号 {acc}'.format(acc=account.vtAccountID))
+        # AccountData
         account = event.dict_['data']
         self.accountDict[account.vtAccountID] = account
+        self.log.debug('更新账号 {acc}'.format(acc=account.vtAccountID))
 
     def getTick(self, vtSymbol):
         try:
@@ -108,23 +110,28 @@ class DataEngine(LoggingMixin):
             return None
 
     def getContract(self, vtSymbol):
-        self.log.debug('查询合约对象')
+        self.log.debug('查询合约 {sm}'.format(sm=vtSymbol))
         try:
             return self.contractDict[vtSymbol]
         except KeyError:
             return None
 
     def getAllContracts(self):
-        self.log.debug('查询所有合约对象')
+        self.log.debug('查询所有合约')
         return self.contractDict.values()
 
     def saveContracts(self):
-        self.log.debug('保存所有合约对象到硬盘')
+        self.log.debug('保存所有合约到硬盘')
         with shelve.open(self.contractFilePath) as f:
             f['data'] = self.contractDict
 
+        with open(self.contractJSONFilePath, 'a+') as f:
+            f.write(json.dumps(
+                [{k: v.__dict__} for k,v in self.contractDict.items()]
+                ,indent=4, sort_keys=False))
+
     def loadContracts(self):
-        self.log.debug('从硬盘读取合约对象')
+        self.log.debug('从硬盘读取合约')
         with shelve.open(self.contractFilePath) as f:
             if 'data' in f:
                 d = f['data']
@@ -143,11 +150,11 @@ class DataEngine(LoggingMixin):
         return self.workingOrderDict.values()
 
     def getAllOrders(self):
-        self.log.debug('获取所有委托')
+        self.log.debug('获取所有委托单')
         return self.orderDict.values()
 
     def getAllTrades(self):
-        self.log.debug('获取所有成交')
+        self.log.debug('获取所有已成交单')
         return self.tradeDict.values()
 
     def getAllPositions(self):
@@ -159,20 +166,17 @@ class DataEngine(LoggingMixin):
         return self.accountDict.values()
 
     def getPositionDetail(self, vtSymbol):
-        self.log.debug('查询持仓细节')
         if vtSymbol in self.detailDict:
             detail = self.detailDict[vtSymbol]
+            self.log.debug('查询 {sm} 持仓'.format(sm=vtSymbol))
         else:
+            self.log.debug('加入 {sm} 持仓'.format(sm=vtSymbol))
             contract = self.getContract(vtSymbol)
             detail = PositionDetail(vtSymbol, contract)
             self.detailDict[vtSymbol] = detail
 
-            # 设置持仓细节的委托转换模式
-            contract = self.getContract(vtSymbol)
-
             if contract:
                 detail.exchange = contract.exchange
-
                 # 上期所合约
                 if contract.exchange == EXCHANGE_SHFE:
                     detail.mode = detail.MODE_SHFE
@@ -206,7 +210,7 @@ class DataEngine(LoggingMixin):
 
 class PositionDetail(LoggingMixin):
     """本地维护的持仓信息"""
-    WORKING_STATUS = ['未知', '未成交', '部分成交']
+    WORKING_STATUS = [STATUS_UNKNOWN, STATUS_NOTTRADED, STATUS_PARTTRADED]
 
     MODE_NORMAL = 'normal'          # 普通模式
     MODE_SHFE = 'shfe'              # 上期所今昨分别平仓
@@ -335,22 +339,15 @@ class PositionDetail(LoggingMixin):
 
     def updateOrderReq(self, req, vtOrderID):
         self.log.debug('发单更新')
-        vtSymbol = req.vtSymbol
-
-        # 基于请求生成委托对象
-        order = VtOrderData()
-        order.vtSymbol = vtSymbol
+        order = OrderData()
+        order.vtSymbol = req.vtSymbol
         order.symbol = req.symbol
         order.exchange = req.exchange
         order.offset = req.offset
         order.direction = req.direction
         order.totalVolume = req.volume
-        order.status =  '未知'
 
-        # 缓存到字典中
         self.workingOrderDict[vtOrderID] = order
-
-        # 计算冻结量
         self.calculateFrozen()
 
     def updateTick(self, tick):
@@ -390,7 +387,6 @@ class PositionDetail(LoggingMixin):
 
     def calculateFrozen(self):
         self.log.debug('计算冻结情况')
-        # 清空冻结数据
         self.longPosFrozen = 0
         self.longYdFrozen = 0
         self.longTdFrozen = 0
@@ -398,7 +394,6 @@ class PositionDetail(LoggingMixin):
         self.shortYdFrozen = 0
         self.shortTdFrozen = 0
 
-        # 遍历统计
         for order in self.workingOrderDict.values():
             # 计算剩余冻结量
             frozenVolume = order.totalVolume - order.tradedVolume

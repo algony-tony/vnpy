@@ -1,26 +1,29 @@
 # encoding: UTF-8
 
-from logging import INFO
-
-import time
 from datetime import datetime
+from vnpy.vtConstant import *
 from vnpy.utility.logging_mixin import LoggingMixin
+
+
+class Event(LoggingMixin):
+    """事件对象, 类似 message"""
+    def __init__(self, type_=None):
+        # 事件类型
+        self.type_ = type_
+        # 字典用于保存具体的事件数据
+        self.dict_ = {}
 
 
 class BaseData(LoggingMixin):
     """回调函数推送数据的基础类, 其他数据类继承于此"""
-
     def __init__(self):
-        """Constructor"""
         self.gatewayName = ''         # Gateway名称
-        self.rawData = None                     # 原始数据
+        self.rawData = None           # 原始数据
 
 
 class TickData(BaseData):
     """Tick行情数据类"""
-
     def __init__(self):
-        """Constructor"""
         super(TickData, self).__init__()
 
         # 代码相关
@@ -102,9 +105,7 @@ class TickData(BaseData):
 
 class BarData(BaseData):
     """K线数据"""
-
     def __init__(self):
-        """Constructor"""
         super(BarData, self).__init__()
 
         self.vtSymbol = ''        # vt系统代码
@@ -130,9 +131,7 @@ class TradeData(BaseData):
     成交数据类
     一般来说，一个OrderData可能对应多个TradeData：一个订单可能多次部分成交
     """
-
     def __init__(self):
-        """Constructor"""
         super(TradeData, self).__init__()
 
         # 代码编号相关
@@ -196,9 +195,7 @@ class TradeData(BaseData):
 
 class OrderData(BaseData):
     """订单数据类"""
-
     def __init__(self):
-        """Constructor"""
         super(OrderData, self).__init__()
 
         # 代码编号相关
@@ -215,7 +212,7 @@ class OrderData(BaseData):
         self.price = 0.0                # 报单价格
         self.totalVolume = 0            # 报单总数量
         self.tradedVolume = 0           # 报单成交数量
-        self.status = ''             # 报单状态
+        self.status = STATUS_UNKNOWN             # 报单状态
 
         self.orderTime = ''           # 发单时间
         self.cancelTime = ''          # 撤单时间
@@ -259,9 +256,7 @@ class OrderData(BaseData):
 
 class PositionData(BaseData):
     """持仓数据类"""
-
     def __init__(self):
-        """Constructor"""
         super(PositionData, self).__init__()
 
         # 代码编号相关
@@ -307,9 +302,7 @@ class PositionData(BaseData):
 
 class AccountData(BaseData):
     """账户数据类"""
-
     def __init__(self):
-        """Constructor"""
         super(AccountData, self).__init__()
 
         # 账号代码相关
@@ -328,9 +321,7 @@ class AccountData(BaseData):
 
 class ContractData(BaseData):
     """合约详细信息类"""
-
     def __init__(self):
-        """Constructor"""
         super(ContractData, self).__init__()
 
         self.symbol = ''              # 代码
@@ -380,9 +371,7 @@ class ContractData(BaseData):
 
 class HistoryData(object):
     """K线时间序列数据"""
-
     def __init__(self):
-        """Constructor"""
         self.vtSymbol = ''    # vt系统代码
         self.symbol = ''      # 代码
         self.exchange = ''    # 交易所
@@ -394,9 +383,7 @@ class HistoryData(object):
 
 class SubscribeReq(object):
     """订阅行情时传入的对象类"""
-
     def __init__(self):
-        """Constructor"""
         self.symbol = ''              # 代码
         self.exchange = ''            # 交易所
 
@@ -410,9 +397,7 @@ class SubscribeReq(object):
 
 class OrderReq(object):
     """发单时传入的对象类"""
-
     def __init__(self):
-        """Constructor"""
         self.symbol = ''              # 代码
         self.exchange = ''            # 交易所
         self.vtSymbol = ''            # VT合约代码
@@ -435,9 +420,7 @@ class OrderReq(object):
 
 class CancelOrderReq(object):
     """撤单时传入的对象类"""
-
     def __init__(self):
-        """Constructor"""
         self.symbol = ''              # 代码
         self.exchange = ''            # 交易所
         self.vtSymbol = ''            # VT合约代码
@@ -450,9 +433,7 @@ class CancelOrderReq(object):
 
 class HistoryReq(object):
     """查询历史数据时传入的对象类"""
-
     def __init__(self):
-        """Constructor"""
         self.symbol = ''              # 代码
         self.exchange = ''            # 交易所
         self.vtSymbol = ''            # VT合约代码

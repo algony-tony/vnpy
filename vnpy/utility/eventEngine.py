@@ -7,7 +7,8 @@ from collections import defaultdict
 
 from qtpy.QtCore import QTimer
 
-from vnpy.vtEvent import *
+from vnpy.base_class import Event
+from vnpy.vtConstant import EVENT_TIMER
 from vnpy.utility.logging_mixin import LoggingMixin
 
 # message queue models

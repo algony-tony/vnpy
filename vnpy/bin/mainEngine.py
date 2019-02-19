@@ -11,7 +11,6 @@ from copy import copy
 from pymongo import MongoClient, ASCENDING
 from pymongo.errors import ConnectionFailure
 
-from vnpy.vtEvent import *
 from vnpy.vtEngine import DataEngine
 from vnpy.config import globalSetting
 from vnpy.utility.logging_mixin import LoggingMixin
