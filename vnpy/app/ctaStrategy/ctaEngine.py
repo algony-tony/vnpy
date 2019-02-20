@@ -15,7 +15,7 @@ from copy import copy
 
 from vnpy.vtConstant import *
 from vnpy.base_class import Event, TickData, BarData
-from vnpy.base_class import SubscribeReq, OrderReq, CancelOrderReq
+from vnpy.base_class import OrderReq, CancelOrderReq
 from vnpy.vtFunction import todayDate, getJsonPath
 from vnpy.app import AppEngine
 from vnpy.config import globalSetting

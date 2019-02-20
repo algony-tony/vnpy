@@ -14,6 +14,7 @@ from pymongo.errors import ConnectionFailure
 
 from vnpy.vtEngine import DataEngine
 from vnpy.config import globalSetting
+from vnpy.base_class import SubscribeReq
 from vnpy.utility.logging_mixin import LoggingMixin
 from vnpy.utility.eventEngine import EventEngine2
 
