@@ -53,7 +53,7 @@ class MainEngine(LoggingMixin):
         self.dbConnect()
         self.connectGateway()
         sleep(10) # 等待接口初始化
-        runApp()
+        self.runApp()
 
     def addGateway(self, gatewayModule):
         gatewayName = gatewayModule.gatewayName
