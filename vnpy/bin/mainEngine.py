@@ -72,7 +72,7 @@ class MainEngine(LoggingMixin):
     def addApp(self, appModule):
         appName = appModule.appName
         self.appDict[appName] = \
-                appModule.appEngine(self, self.eventEngine)
+                appModule.appEngine(self)
 
         self.__dict__[appName] = self.appDict[appName]
 
