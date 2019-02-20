@@ -163,21 +163,18 @@ class MainEngine(LoggingMixin):
     def cancelOrder(self, cancelOrderReq, gatewayName):
         """对特定接口撤单"""
         gateway = self.getGateway(gatewayName)
-
         if gateway:
             gateway.cancelOrder(cancelOrderReq)
 
     def qryAccount(self, gatewayName):
         """查询特定接口的账户"""
         gateway = self.getGateway(gatewayName)
-
         if gateway:
             gateway.qryAccount()
 
     def qryPosition(self, gatewayName):
         """查询特定接口的持仓"""
         gateway = self.getGateway(gatewayName)
-
         if gateway:
             gateway.qryPosition()
 
