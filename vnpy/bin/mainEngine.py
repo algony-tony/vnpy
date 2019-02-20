@@ -133,8 +133,10 @@ class MainEngine(LoggingMixin):
             req.exchange = contract.exchange
 
             # 对于IB接口订阅行情时所需的货币和产品类型，从策略属性中获取
-            req.currency = strategy.currency
-            req.productClass = strategy.productClass
+            if currency:
+                req.currency = currency
+            if productClass:
+                req.productClass = productClass
 
             gw =  self.getGateway(contract.gatewayName)
             if gw:
