@@ -4,6 +4,7 @@ from __future__ import division
 
 import os
 import shelve
+from time import sleep
 from datetime import datetime
 from collections import OrderedDict
 from copy import copy
