@@ -90,9 +90,7 @@ def getJsonPath(name, moduleFile):
 def loadJsonSetting(settingFileName):
     """加载JSON配置"""
     settingFilePath = getJsonPath(settingFileName, __file__)
-
     setting = {}
-
     try:
         with open(settingFilePath, 'rb') as f:
             setting = f.read()
@@ -107,6 +105,5 @@ def loadJsonSetting(settingFileName):
 
 # 函数常量
 MAX_NUMBER = 10000000000000
-
 MAX_DECIMAL = globalSetting.get('maxDecimal', 4)
 

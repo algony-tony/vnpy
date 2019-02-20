@@ -125,7 +125,7 @@ class DataEngine(LoggingMixin):
         with shelve.open(self.contractFilePath) as f:
             f['data'] = self.contractDict
 
-        with open(self.contractJSONFilePath, 'a+') as f:
+        with open(self.contractJSONFilePath, 'w') as f:
             f.write(json.dumps(
                 [{k: v.__dict__} for k,v in self.contractDict.items()]
                 ,indent=4, sort_keys=False))

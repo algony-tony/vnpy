@@ -545,9 +545,8 @@ class CtaEngine(AppEngine):
         """取整价格到合约最小价格变动"""
         if not priceTick:
             return price
-
-        newPrice = round(price/priceTick, 0) * priceTick
-        return newPrice
+        else:
+            return round(price/priceTick, 0)*priceTick
 
     def stop(self):
         """停止"""
@@ -608,7 +607,6 @@ class CtaEngine(AppEngine):
                                fields=['open', 'high', 'low', 'close', 'volume'],
                                start_date=startDate,
                                end_date=endDate)
-
         l = []
         for ix, row in df.iterrows():
             bar = BarData()
@@ -628,3 +626,4 @@ class CtaEngine(AppEngine):
 
     def writeLog(self, content):
         self.log.info(content)
+
