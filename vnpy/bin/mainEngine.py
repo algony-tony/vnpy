@@ -18,15 +18,22 @@ from vnpy.utility.eventEngine import EventEngine2
 
 
 class MainEngine(LoggingMixin):
-    """主引擎"""
-    def __init__(self):
+    """
+             app...
+             |^
+             v|
+    -----------------------------------
+    |           MainEngine            |
+    -----------------------------------
+    ^        ^            ^           ^
+    |        |            |           |
+    gateway  EventEngine  dataEngine  DBConnection
+    """
+    def __init__(self, EventEngineSleepInterval=None):
         self.todayDate = datetime.now().strftime('%Y%m%d')
 
-        self.eventEngine = EventEngine2()
-        self.eventEngine.start()
-
+        self.eventEngine = EventEngine2(EventEngineSleepInterval)
         self.dataEngine = DataEngine(self.eventEngine)
-
         self.dbClient = None    # MongoDB客户端对象
 
         # 接口实例
@@ -39,6 +46,13 @@ class MainEngine(LoggingMixin):
 
         # 风控引擎实例（特殊独立对象）
         self.rmEngine = None
+
+    def startAll(self):
+        self.eventEngine.start()
+        self.dbConnect()
+        self.connectGateway()
+        sleep(10) # 等待接口初始化
+        runApp()
 
     def addGateway(self, gatewayModule):
         gatewayName = gatewayModule.gatewayName
@@ -76,7 +90,17 @@ class MainEngine(LoggingMixin):
         else:
             self.getGateway(gatewayName).connect()
 
-        self.dbConnect()
+    def runApp(self, appName=None):
+        # run all apps if not specified
+        if not appName:
+            for k in self.appDict.keys():
+                kapp = self.appDict[k]
+                kapp.initAll()
+                kapp.startAll()
+        else:
+            kapp = self.getApp(appName)
+            kapp.initAll()
+            kapp.startAll()
 
     def getGateway(self, gatewayName):
         try:
@@ -93,9 +117,28 @@ class MainEngine(LoggingMixin):
             return None
 
     def subscribe(self, subscribeReq, gatewayName):
+        # 待删除
         gateway = self.getGateway(gatewayName)
         if gateway:
             gateway.subscribe(subscribeReq)
+
+    def subscribeMarketData(self, vtSymbol, currency=None, productClass=None):
+        """订阅行情"""
+        contract = self.getContract(vtSymbol)
+        if contract:
+            req = SubscribeReq()
+            req.symbol = contract.symbol
+            req.exchange = contract.exchange
+
+            # 对于IB接口订阅行情时所需的货币和产品类型，从策略属性中获取
+            req.currency = strategy.currency
+            req.productClass = strategy.productClass
+
+            gw =  self.getGateway(contract.gatewayName)
+            if gw:
+                gw.subscribe(req)
+        else:
+            self.writeLog('合约 {vs} 行情订阅失败'.format(vs=vtSymbol))
 
     def sendOrder(self, orderReq, gatewayName):
         """对特定接口发单"""
@@ -137,7 +180,6 @@ class MainEngine(LoggingMixin):
     def dbConnect(self):
         """连接MongoDB数据库"""
         if not self.dbClient:
-            # 读取MongoDB的设置
             try:
                 # 设置MongoDB操作的超时时间为0.5秒
                 self.dbClient = MongoClient(globalSetting['mongoHost'], int(globalSetting['mongoPort']), serverSelectionTimeoutMS=10)

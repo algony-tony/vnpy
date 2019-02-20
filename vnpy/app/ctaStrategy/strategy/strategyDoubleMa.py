@@ -68,17 +68,13 @@ class DoubleMaStrategy(CtaTemplate):
         for bar in initData:
             self.onBar(bar)
 
-        self.putEvent()
-
     def onStart(self):
         """启动策略（必须由用户继承实现）"""
         self.writeLog('双EMA演示策略启动')
-        self.putEvent()
 
     def onStop(self):
         """停止策略（必须由用户继承实现）"""
         self.writeLog('双EMA演示策略停止')
-        self.putEvent()
 
     def onTick(self, tick):
         """收到行情TICK推送（必须由用户继承实现）"""
@@ -121,9 +117,6 @@ class DoubleMaStrategy(CtaTemplate):
             elif self.pos > 0:
                 self.sell(bar.close, 1)
                 self.short(bar.close, 1)
-
-        # 发出状态更新事件
-        self.putEvent()
 
     def onOrder(self, order):
         """收到委托变化推送（必须由用户继承实现）"""

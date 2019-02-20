@@ -77,17 +77,13 @@ class KkStrategy(CtaTemplate):
         for bar in initData:
             self.onBar(bar)
 
-        self.putEvent()
-
     def onStart(self):
         """启动策略（必须由用户继承实现）"""
         self.writeLog('%s策略启动' %self.name)
-        self.putEvent()
 
     def onStop(self):
         """停止策略（必须由用户继承实现）"""
         self.writeLog('%s策略停止' %self.name)
-        self.putEvent()
 
     def onTick(self, tick):
         """收到行情TICK推送（必须由用户继承实现）"""
@@ -142,9 +138,6 @@ class KkStrategy(CtaTemplate):
         # 同步数据到数据库
         self.saveSyncData()
 
-        # 发出状态更新事件
-        self.putEvent()
-
     def onOrder(self, order):
         """收到委托变化推送（必须由用户继承实现）"""
         pass
@@ -164,9 +157,6 @@ class KkStrategy(CtaTemplate):
             for orderID in (self.buyOrderIDList + self.shortOrderIDList):
                 if orderID in self.orderList:
                     self.orderList.remove(orderID)
-
-        # 发出状态更新事件
-        self.putEvent()
 
     def sendOcoOrder(self, buyPrice, shortPrice, volume):
         """

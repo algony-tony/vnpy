@@ -30,10 +30,10 @@ class CtaEngine(AppEngine):
 
     STATUS_FINISHED = set([STATUS_REJECTED, STATUS_CANCELLED, STATUS_ALLTRADED])
 
-    def __init__(self, mainEngine, eventEngine):
+    def __init__(self, mainEngine):
         """Constructor"""
         self.mainEngine = mainEngine
-        self.eventEngine = eventEngine
+        self.eventEngine = mainEngine.eventEngine
         self.today = todayDate()
 
         # 保存策略实例的字典
@@ -79,6 +79,32 @@ class CtaEngine(AppEngine):
 
         # 注册事件监听
         self.registerEvent()
+
+        # 读取策略配置并加载策略
+        with open(self.settingFilePath) as f:
+            l = json.load(f)
+            for setting in l:
+                self.loadStrategy(setting)
+
+    def registerEvent(self):
+        self.eventEngine.register(EVENT_TICK, self.processTickEvent)
+        self.eventEngine.register(EVENT_ORDER, self.processOrderEvent)
+        self.eventEngine.register(EVENT_TRADE, self.processTradeEvent)
+
+    def initAll(self):
+        # 初始化策略, 同步策略持仓, 订阅行情
+        for name in self.strategyDict.keys():
+            self.initStrategy(name)
+
+    def startAll(self):
+        """全部启动"""
+        for name in self.strategyDict.keys():
+            self.startStrategy(name)
+
+    def stopAll(self):
+        """全部停止"""
+        for name in self.strategyDict.keys():
+            self.stopStrategy(name)
 
     def sendOrder(self, vtSymbol, orderType, price, volume, strategy):
         """发单"""
@@ -191,7 +217,6 @@ class CtaEngine(AppEngine):
 
     def cancelStopOrder(self, stopOrderID):
         """撤销停止单"""
-        # 检查停止单是否存在
         if stopOrderID in self.workingStopOrderDict:
             so = self.workingStopOrderDict[stopOrderID]
             strategy = so.strategy
@@ -321,11 +346,6 @@ class CtaEngine(AppEngine):
             # 保存策略持仓到数据库
             self.saveSyncData(strategy)
 
-    def registerEvent(self):
-        self.eventEngine.register(EVENT_TICK, self.processTickEvent)
-        self.eventEngine.register(EVENT_ORDER, self.processOrderEvent)
-        self.eventEngine.register(EVENT_TRADE, self.processTradeEvent)
-
     def insertData(self, dbName, collectionName, data):
         """插入数据到数据库（这里的data可以是TickData或者BarData）"""
         self.mainEngine.dbInsert(dbName, collectionName, data.__dict__)
@@ -364,9 +384,6 @@ class CtaEngine(AppEngine):
             l.append(tick)
         return l
 
-    def writeLog(self, content):
-        self.log.info(content)
-
     def loadStrategy(self, setting):
         """载入策略"""
         try:
@@ -375,18 +392,16 @@ class CtaEngine(AppEngine):
         except Exception:
             msg = traceback.format_exc()
             self.writeLog('载入策略出错: %s' %msg)
-            return
+            return None
 
         strategyClass = STRATEGY_CLASS.get(className, None)
         if not strategyClass:
             self.writeLog('找不到策略类: %s' %className)
-            return
+            return None
 
-        # 防止策略重名
         if name in self.strategyDict:
             self.writeLog('策略实例重名: %s' %name)
         else:
-            # 创建策略实例
             strategy = strategyClass(self, setting)
             self.strategyDict[name] = strategy
 
@@ -401,34 +416,15 @@ class CtaEngine(AppEngine):
                 self.tickStrategyDict[strategy.vtSymbol] = l
             l.append(strategy)
 
-    def subscribeMarketData(self, strategy):
-        """订阅行情"""
-        # 订阅合约
-        contract = self.mainEngine.getContract(strategy.vtSymbol)
-        if contract:
-            req = SubscribeReq()
-            req.symbol = contract.symbol
-            req.exchange = contract.exchange
-
-            # 对于IB接口订阅行情时所需的货币和产品类型，从策略属性中获取
-            req.currency = strategy.currency
-            req.productClass = strategy.productClass
-
-            self.mainEngine.subscribe(req, contract.gatewayName)
-        else:
-            self.writeLog('%s的交易合约%s无法找到' %(strategy.name, strategy.vtSymbol))
-
     def initStrategy(self, name):
         """初始化策略"""
         if name in self.strategyDict:
             strategy = self.strategyDict[name]
-
             if not strategy.inited:
                 strategy.inited = True
                 self.callStrategyFunc(strategy, strategy.onInit)
-
-                self.loadSyncData(strategy)                             # 初始化完成后加载同步数据
-                self.subscribeMarketData(strategy)                      # 加载同步数据后再订阅行情
+                self.loadSyncData(strategy)         # 同步数据库中保存的持仓情况
+                self.mainEngine.subscribeMarketData(strategy.vtSymbol)
             else:
                 self.writeLog('请勿重复初始化策略实例: %s' %name)
         else:
@@ -466,43 +462,6 @@ class CtaEngine(AppEngine):
         else:
             self.writeLog('策略实例不存在: %s' %name)
 
-    def initAll(self):
-        """全部初始化"""
-        for name in self.strategyDict.keys():
-            self.initStrategy(name)
-
-    def startAll(self):
-        """全部启动"""
-        for name in self.strategyDict.keys():
-            self.startStrategy(name)
-
-    def stopAll(self):
-        """全部停止"""
-        for name in self.strategyDict.keys():
-            self.stopStrategy(name)
-
-    def saveSetting(self):
-        """保存策略配置"""
-        with open(self.settingFilePath, 'w') as f:
-            l = []
-
-            for strategy in self.strategyDict.values():
-                setting = {}
-                for param in strategy.paramList:
-                    setting[param] = strategy.__getattribute__(param)
-                l.append(setting)
-
-            jsonL = json.dumps(l, indent=4)
-            f.write(jsonL)
-
-    def loadSetting(self):
-        """读取策略配置"""
-        with open(self.settingFilePath) as f:
-            l = json.load(f)
-
-            for setting in l:
-                self.loadStrategy(setting)
-
     def getStrategyVar(self, name):
         """获取策略当前的变量字典"""
         if name in self.strategyDict:
@@ -534,21 +493,6 @@ class CtaEngine(AppEngine):
     def getStrategyNames(self):
         """查询所有策略名称"""
         return self.strategyDict.keys()
-
-    def putStrategyEvent(self, name):
-        """触发策略状态变化事件（通常用于通知GUI更新）"""
-        strategy = self.strategyDict[name]
-        d = {k:strategy.__getattribute__(k) for k in strategy.varList}
-
-        event = Event(EVENT_CTA_STRATEGY+name)
-        event.dict_['data'] = d
-        self.eventEngine.put(event)
-
-        d2 = {k:str(v) for k,v in d.items()}
-        d2['name'] = name
-        event2 = Event(EVENT_CTA_STRATEGY)
-        event2.dict_['data'] = d2
-        self.eventEngine.put(event2)
 
     def callStrategyFunc(self, strategy, func, params=None):
         """调用策略的函数，若触发异常则捕捉"""
@@ -666,7 +610,6 @@ class CtaEngine(AppEngine):
                                end_date=endDate)
 
         l = []
-
         for ix, row in df.iterrows():
             bar = BarData()
             bar.symbol = symbol
@@ -679,7 +622,9 @@ class CtaEngine(AppEngine):
             bar.datetime = row.name
             bar.date = bar.datetime.strftime("%Y%m%d")
             bar.time = bar.datetime.strftime("%H:%M:%S")
-
             l.append(bar)
 
         return l
+
+    def writeLog(self, content):
+        self.log.info(content)

@@ -80,17 +80,13 @@ class TurtleTradingStrategy(CtaTemplate):
         for bar in initData:
             self.onBar(bar)
 
-        self.putEvent()
-
     def onStart(self):
         """启动策略（必须由用户继承实现）"""
         self.writeLog('%s策略启动' %self.name)
-        self.putEvent()
 
     def onStop(self):
         """停止策略（必须由用户继承实现）"""
         self.writeLog('%s策略停止' %self.name)
-        self.putEvent()
 
     def onTick(self, tick):
         """收到行情TICK推送（必须由用户继承实现）"""
@@ -141,9 +137,6 @@ class TurtleTradingStrategy(CtaTemplate):
         # 同步数据到数据库
         self.saveSyncData()
 
-        # 发出状态更新事件
-        self.putEvent()
-
     def onOrder(self, order):
         """收到委托变化推送（必须由用户继承实现）"""
         pass
@@ -156,9 +149,6 @@ class TurtleTradingStrategy(CtaTemplate):
         else:
             self.shortEntry = trade.price
             self.shortStop = self.shortEntry + self.atrVolatility * 2
-
-        # 发出状态更新事件
-        self.putEvent()
 
     def onStopOrder(self, so):
         """停止单推送"""
@@ -181,7 +171,6 @@ class TurtleTradingStrategy(CtaTemplate):
             self.buy(price + self.atrVolatility*1.5, self.fixedSize, True)
 
     def sendShortOrders(self, price):
-        """"""
         t = self.pos / self.fixedSize
 
         if t > -1:

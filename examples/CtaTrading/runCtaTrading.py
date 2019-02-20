@@ -26,15 +26,14 @@ def runChildProcess():
     me = MainEngine()
     me.addGateway(ctpGateway)
     me.addApp(ctaStrategy)
-    me.connectGateway('CTP')
+    me.startAll()
 
-    sleep(10)                       # 等待CTP接口初始化
     me.dataEngine.saveContracts()   # 保存合约信息到文件
 
-    cta = me.getApp(ctaStrategy.appName)
-    cta.loadSetting()
-    cta.initAll()
-    cta.startAll()
+#     me.connectGateway('CTP')
+#     cta = me.getApp(ctaStrategy.appName)
+#     cta.initAll()
+#     cta.startAll()
 
     while True:
         sleep(1)

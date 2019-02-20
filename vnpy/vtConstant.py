@@ -21,7 +21,7 @@ EVENT_CONTRACT = 'eContract.'           # 合约基础信息回报事件
 EVENT_ERROR = 'eError.'                 # 错误回报事件
 EVENT_HISTORY = 'eHistory.'             # K线数据查询回报事件
 ## App 相关
-EVENT_CTA_STRATEGY = 'eCtaStrategy.'    # CTA策略状态变化事件
+# EVENT_CTA_STRATEGY = 'eCtaStrategy.'    # CTA策略状态变化事件
 
 
 # 方向常量

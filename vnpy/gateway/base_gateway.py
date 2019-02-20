@@ -11,7 +11,6 @@ class BaseGateway(LoggingMixin):
     """交易接口"""
 
     def __init__(self, eventEngine, gatewayName):
-        """Constructor"""
         self.eventEngine = eventEngine
         self.gatewayName = gatewayName
 

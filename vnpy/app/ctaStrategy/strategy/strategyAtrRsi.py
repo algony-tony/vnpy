@@ -90,17 +90,13 @@ class AtrRsiStrategy(CtaTemplate):
         for bar in initData:
             self.onBar(bar)
 
-        self.putEvent()
-
     def onStart(self):
         """启动策略（必须由用户继承实现）"""
         self.writeLog('%s策略启动' %self.name)
-        self.putEvent()
 
     def onStop(self):
         """停止策略（必须由用户继承实现）"""
         self.writeLog('%s策略停止' %self.name)
-        self.putEvent()
 
     def onTick(self, tick):
         """收到行情TICK推送（必须由用户继承实现）"""
@@ -164,16 +160,12 @@ class AtrRsiStrategy(CtaTemplate):
         # 同步数据到数据库
         self.saveSyncData()
 
-        # 发出状态更新事件
-        self.putEvent()
-
     def onOrder(self, order):
         """收到委托变化推送（必须由用户继承实现）"""
         pass
 
     def onTrade(self, trade):
-        # 发出状态更新事件
-        self.putEvent()
+        pass
 
     def onStopOrder(self, so):
         """停止单推送"""
