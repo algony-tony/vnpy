@@ -121,11 +121,11 @@ class DataEngine(LoggingMixin):
         return self.contractDict.values()
 
     def saveContracts(self):
-        self.log.debug('保存所有合约到硬盘')
+        self.log.debug('保存 {num} 合约到硬盘'.format(num=len(self.contractDict)))
         with shelve.open(self.contractFilePath) as f:
             f['data'] = self.contractDict
 
-        with open(self.contractJSONFilePath, 'w') as f:
+        with open(self.contractJSONFilePath, 'w+') as f:
             f.write(json.dumps(
                 [{k: v.__dict__} for k,v in self.contractDict.items()]
                 ,indent=4, sort_keys=False))
