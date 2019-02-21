@@ -1,7 +1,7 @@
 # encoding: UTF-8
 
 from datetime import datetime
-from vnpy.vtConstant import *
+from vnpy.vtConstant import C_ORDER_STATUS as OSTA
 from vnpy.utility.logging_mixin import LoggingMixin
 
 
@@ -212,7 +212,7 @@ class OrderData(BaseData):
         self.price = 0.0                # 报单价格
         self.totalVolume = 0            # 报单总数量
         self.tradedVolume = 0           # 报单成交数量
-        self.status = STATUS_UNKNOWN             # 报单状态
+        self.status = OSTA.STATUS_UNKNOWN             # 报单状态
 
         self.orderTime = ''           # 发单时间
         self.cancelTime = ''          # 撤单时间

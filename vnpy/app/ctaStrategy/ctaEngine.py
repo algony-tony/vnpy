@@ -13,9 +13,12 @@ from collections import OrderedDict
 from datetime import datetime, timedelta
 from copy import copy
 
-from vnpy.vtConstant import *
 from vnpy.vtConstant import C_EVENT
 from vnpy.vtConstant import C_MONGO_DB_NAME as C_DB
+from vnpy.vtConstant import C_ORDER_STATUS as OSTA
+from vnpy.vtConstant import C_DIRECTION as CDIR
+from vnpy.vtConstant import C_OFFSET as COFF
+from vnpy.vtConstant import C_PRICETYPE as CPRI
 from vnpy.base_class import Event, TickData, BarData
 from vnpy.base_class import OrderReq, CancelOrderReq
 from vnpy.utility.file import todayDate, getJsonPath
@@ -30,11 +33,10 @@ class CtaEngine(AppEngine):
     """CTA策略引擎"""
     settingFilePath = getJsonPath('CTA_setting.json', __file__)
 
-    STATUS_FINISHED = set([STATUS_REJECTED, STATUS_CANCELLED, STATUS_ALLTRADED])
+    StatusFinished = set([OSTA.STATUS_REJECTED, OSTA.STATUS_CANCELLED, OSTA.STATUS_ALLTRADED])
 
     def __init__(self, mainEngine):
         self.mainEngine = mainEngine
-        self.eventEngine = mainEngine.eventEngine
         self.today = todayDate()
 
         # 保存策略实例的字典
@@ -88,9 +90,9 @@ class CtaEngine(AppEngine):
                 self.loadStrategy(setting)
 
     def registerEvent(self):
-        self.eventEngine.register(C_EVENT.EVENT_TICK, self.processTickEvent)
-        self.eventEngine.register(C_EVENT.EVENT_ORDER, self.processOrderEvent)
-        self.eventEngine.register(C_EVENT.EVENT_TRADE, self.processTradeEvent)
+        self.mainEngine.registerEvent(C_EVENT.EVENT_TICK, self.processTickEvent)
+        self.mainEngine.registerEvent(C_EVENT.EVENT_ORDER, self.processOrderEvent)
+        self.mainEngine.registerEvent(C_EVENT.EVENT_TRADE, self.processTradeEvent)
 
     def initAll(self):
         # 初始化策略, 同步策略持仓, 订阅行情
@@ -119,24 +121,24 @@ class CtaEngine(AppEngine):
         req.currency = strategy.currency
 
         # 设计为CTA引擎发出的委托只允许使用限价单
-        req.priceType = PRICETYPE_LIMITPRICE
+        req.priceType = CPRI.PRICETYPE_LIMITPRICE
 
         # CTA委托类型映射
         if orderType == CTAORDER_BUY:
-            req.direction = DIRECTION_LONG
-            req.offset = OFFSET_OPEN
+            req.direction = CDIR.DIRECTION_LONG
+            req.offset = COFF.OFFSET_OPEN
 
         elif orderType == CTAORDER_SELL:
-            req.direction = DIRECTION_SHORT
-            req.offset = OFFSET_CLOSE
+            req.direction = CDIR.DIRECTION_SHORT
+            req.offset = COFF.OFFSET_CLOSE
 
         elif orderType == CTAORDER_SHORT:
-            req.direction = DIRECTION_SHORT
-            req.offset = OFFSET_OPEN
+            req.direction = CDIR.DIRECTION_SHORT
+            req.offset = COFF.OFFSET_OPEN
 
         elif orderType == CTAORDER_COVER:
-            req.direction = DIRECTION_LONG
-            req.offset = OFFSET_CLOSE
+            req.direction = CDIR.DIRECTION_LONG
+            req.offset = COFF.OFFSET_CLOSE
 
         # 委托转换
         reqList = self.mainEngine.convertOrderReq(req)
@@ -164,7 +166,7 @@ class CtaEngine(AppEngine):
         # 如果查询成功
         if order:
             # 检查是否报单还有效，只有有效时才发出撤单指令
-            orderFinished = (order.status==STATUS_ALLTRADED or order.status==STATUS_CANCELLED)
+            orderFinished = (order.status==OSTA.STATUS_ALLTRADED or order.status==OSTA.STATUS_CANCELLED)
             if not orderFinished:
                 req = CancelOrderReq()
                 req.symbol = order.symbol
@@ -189,17 +191,17 @@ class CtaEngine(AppEngine):
         so.status = STOPORDER_WAITING
 
         if orderType == CTAORDER_BUY:
-            so.direction = DIRECTION_LONG
-            so.offset = OFFSET_OPEN
+            so.direction = CDIR.DIRECTION_LONG
+            so.offset = COFF.OFFSET_OPEN
         elif orderType == CTAORDER_SELL:
-            so.direction = DIRECTION_SHORT
-            so.offset = OFFSET_CLOSE
+            so.direction = CDIR.DIRECTION_SHORT
+            so.offset = COFF.OFFSET_CLOSE
         elif orderType == CTAORDER_SHORT:
-            so.direction = DIRECTION_SHORT
-            so.offset = OFFSET_OPEN
+            so.direction = CDIR.DIRECTION_SHORT
+            so.offset = COFF.OFFSET_OPEN
         elif orderType == CTAORDER_COVER:
-            so.direction = DIRECTION_LONG
-            so.offset = OFFSET_CLOSE
+            so.direction = CDIR.DIRECTION_LONG
+            so.offset = COFF.OFFSET_CLOSE
 
         # 保存stopOrder对象到字典中
         self.stopOrderDict[stopOrderID] = so
@@ -242,13 +244,13 @@ class CtaEngine(AppEngine):
             # 遍历等待中的停止单，检查是否会被触发
             for so in self.workingStopOrderDict.values():
                 if so.vtSymbol == vtSymbol:
-                    longTriggered = so.direction==DIRECTION_LONG and tick.lastPrice>=so.price        # 多头停止单被触发
-                    shortTriggered = so.direction==DIRECTION_SHORT and tick.lastPrice<=so.price     # 空头停止单被触发
+                    longTriggered = so.direction==CDIR.DIRECTION_LONG and tick.lastPrice>=so.price        # 多头停止单被触发
+                    shortTriggered = so.direction==CDIR.DIRECTION_SHORT and tick.lastPrice<=so.price     # 空头停止单被触发
 
                     if longTriggered or shortTriggered:
                         # 买入和卖出分别以涨停跌停价发单（模拟市价单）
                         # 对于没有涨跌停价格的市场则使用5档报价
-                        if so.direction==DIRECTION_LONG:
+                        if so.direction==CDIR.DIRECTION_LONG:
                             if tick.upperLimit:
                                 price = tick.upperLimit
                             else:
@@ -313,7 +315,7 @@ class CtaEngine(AppEngine):
             strategy = self.orderStrategyDict[vtOrderID]
 
             # 如果委托已经完成（拒单、撤销、全成），则从活动委托集合中移除
-            if order.status in self.STATUS_FINISHED:
+            if order.status in self.StatusFinished:
                 s = self.strategyOrderDict[strategy.name]
                 if vtOrderID in s:
                     s.remove(vtOrderID)
@@ -334,7 +336,7 @@ class CtaEngine(AppEngine):
             strategy = self.orderStrategyDict[trade.vtOrderID]
 
             # 计算策略持仓
-            if trade.direction == DIRECTION_LONG:
+            if trade.direction == CDIR.DIRECTION_LONG:
                 strategy.pos += trade.volume
             else:
                 strategy.pos -= trade.volume

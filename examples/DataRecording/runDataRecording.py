@@ -11,7 +11,6 @@ from vnpy.app import dataRecorder
 
 def runChildProcess():
     """子进程运行函数"""
-    print('-'*20)
 
     me = MainEngine()
     me.addGateway(ctpGateway)
@@ -23,11 +22,6 @@ def runChildProcess():
 
 def runParentProcess():
     """父进程运行函数"""
-    # 创建日志引擎
-    le = LogEngine()
-    le.setLogLevel(le.LEVEL_INFO)
-    le.addConsoleHandler()
-    le.info('启动行情记录守护父进程')
 
     DAY_START = time(8, 57)         # 日盘启动和停止时间
     DAY_END = time(15, 18)
@@ -54,22 +48,18 @@ def runParentProcess():
 
         # 记录时间则需要启动子进程
         if recording and p is None:
-            le.info('启动子进程')
             p = multiprocessing.Process(target=runChildProcess)
             p.start()
-            le.info('子进程启动成功')
 
         # 非记录时间则退出子进程
         if not recording and p is not None:
-            le.info('关闭子进程')
             p.terminate()
             p.join()
             p = None
-            le.info('子进程关闭成功')
 
         sleep(5)
 
 
 if __name__ == '__main__':
-    #runChildProcess()
-    runParentProcess()
+    runChildProcess()
+    # runParentProcess()

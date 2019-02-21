@@ -12,7 +12,6 @@ from vnpy.app import ctaStrategy
 
 def runChildProcess():
     """子进程运行函数"""
-    print("--- runChildProcess ---")
 
     me = MainEngine()
     me.addGateway(ctpGateway)
@@ -21,17 +20,11 @@ def runChildProcess():
 
     me.dataEngine.saveContracts()   # 保存合约信息到文件
 
-#     me.connectGateway('CTP')
-#     cta = me.getApp(ctaStrategy.appName)
-#     cta.initAll()
-#     cta.startAll()
-
     while True:
         sleep(1)
 
 def runParentProcess():
     """父进程运行函数"""
-    print('启动CTA策略守护父进程')
 
     DAY_START = time(8, 45)         # 日盘启动和停止时间
     DAY_END = time(15, 30)

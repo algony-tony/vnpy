@@ -118,6 +118,12 @@ class MainEngine(LoggingMixin):
             self.writeLog('应用 {app} 不存在'.format(app=appName))
             return None
 
+    def registerEvent(self, type, handler):
+        self.eventEngine.registerEvent(type, handler)
+
+    def putEvent(self, type, handler):
+        self.eventEngine.putEvent(type, handler)
+
     def subscribe(self, subscribeReq, gatewayName):
         # 待删除
         gateway = self.getGateway(gatewayName)
@@ -125,7 +131,7 @@ class MainEngine(LoggingMixin):
             gateway.subscribe(subscribeReq)
 
     def subscribeMarketData(self, vtSymbol, currency=None, productClass=None):
-        """订阅行情"""
+        """从 gateway 订阅行情"""
         contract = self.getContract(vtSymbol)
         if contract:
             req = SubscribeReq()

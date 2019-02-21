@@ -8,7 +8,7 @@ from collections import defaultdict
 from qtpy.QtCore import QTimer
 
 from vnpy.base_class import Event
-from vnpy.vtConstant import EVENT_TIMER
+from vnpy.vtConstant import C_EVENT
 from vnpy.utility.logging_mixin import LoggingMixin
 
 # message queue models
@@ -90,8 +90,8 @@ class EventEngine(LoggingMixin):
 
     def __onTimer(self):
         """向事件队列中存入计时器事件"""
-        event = Event(type_=EVENT_TIMER)
-        self.put(event)
+        event = Event(type_=C_EVENT.EVENT_TIMER)
+        self.putEvent(event)
 
     def start(self, timer=True):
         """
@@ -113,10 +113,10 @@ class EventEngine(LoggingMixin):
         # 等待事件处理线程退出
         self.__thread.join()
 
-    def put(self, event):
+    def putEvent(self, event):
         self.__queue.put(event)
 
-    def register(self, type_, handler):
+    def registerEvent(self, type_, handler):
         # 尝试获取该事件类型对应的处理函数列表
         # 若无 defaultDict 会自动创建新的list
         handlerList = self.__handlers[type_]
@@ -124,7 +124,7 @@ class EventEngine(LoggingMixin):
         if handler not in handlerList:
             handlerList.append(handler)
 
-    def unregister(self, type_, handler):
+    def unregisterEvent(self, type_, handler):
         try:
             self.__handlers[type_].remove(handler)
         except ValueError:
@@ -198,8 +198,8 @@ class EventEngine2(LoggingMixin):
     def __runTimer(self):
         """运行在计时器线程中的循环函数"""
         while self.__timerActive:
-            event = Event(type_=EVENT_TIMER)
-            self.put(event)
+            event = Event(type_=C_EVENT.EVENT_TIMER)
+            self.putEvent(event)
             sleep(self.__timerSleep)
 
     def start(self, timer=True):
@@ -223,10 +223,10 @@ class EventEngine2(LoggingMixin):
         # 等待事件处理线程退出
         self.__thread.join()
 
-    def put(self, event):
+    def putEvent(self, event):
         self.__queue.put(event)
 
-    def register(self, type_, handler):
+    def registerEvent(self, type_, handler):
         handlerList = self.__handlers[type_]
 
         if handler not in handlerList:
@@ -234,7 +234,7 @@ class EventEngine2(LoggingMixin):
             self.log.debug('Register {hd} for {tp}'.format(
                 hd=handler.__name__, tp=type_))
 
-    def unregister(self, type_, handler):
+    def unregisterEvent(self, type_, handler):
         try:
             self.__handlers[type_].remove(handler)
             self.log.debug('Unregister {hd} for {tp}'.format(

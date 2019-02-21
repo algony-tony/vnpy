@@ -4,7 +4,8 @@
 本文件包含了CTA引擎中的策略开发用模板，开发策略时需要继承CtaTemplate类。
 '''
 
-from vnpy.vtConstant import *
+from vnpy.vtConstant import C_MONGO_DB_NAME as C_DB
+from vnpy.vtConstant import C_ORDER_STATUS as OSTA
 from vnpy.vtUtility import BarGenerator, ArrayManager
 from vnpy.utility.logging_mixin import LoggingMixin
 
@@ -17,8 +18,8 @@ class CtaTemplate(LoggingMixin):
     author = 'author'
 
     # MongoDB数据库的名称，K线数据库默认为1分钟
-    __tickDbName = TICK_DB_NAME
-    __barDbName = MINUTE_DB_NAME
+    __tickDbName = C_DB.TICK_DB_NAME
+    __barDbName = C_DB.MINUTE_DB_NAME
 
     # 策略的基本参数
     name = ''           # 策略实例名称
@@ -191,7 +192,7 @@ class TargetPosTemplate(CtaTemplate):
     tickAdd = 1             # 委托时相对基准价格的超价
     lastTick = None         # 最新tick数据
     lastBar = None          # 最新bar数据
-    targetPos = EMPTY_INT   # 目标持仓
+    targetPos = 0   # 目标持仓
     orderList = []          # 委托号列表
 
     # 变量列表，保存了变量的名称
@@ -218,7 +219,7 @@ class TargetPosTemplate(CtaTemplate):
 
     def onOrder(self, order):
         """收到委托推送"""
-        if order.status == STATUS_ALLTRADED or order.status == STATUS_CANCELLED:
+        if order.status == OSTA.STATUS_ALLTRADED or order.status == OSTA.STATUS_CANCELLED:
             if order.vtOrderID in self.orderList:
                 self.orderList.remove(order.vtOrderID)
 

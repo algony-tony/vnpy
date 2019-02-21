@@ -13,7 +13,13 @@ import json
 from copy import copy
 from datetime import datetime, timedelta
 
-from vnpy.vtConstant import *
+from vnpy.vtConstant import C_EVENT
+from vnpy.vtConstant import C_EXCHANGE as CEXC
+from vnpy.vtConstant import C_DIRECTION as CDIR
+from vnpy.vtConstant import C_OFFSET as COFF
+from vnpy.vtConstant import C_PRICETYPE as CPRI
+from vnpy.vtConstant import C_PRODUCT as CPRO
+from vnpy.vtConstant import C_ORDER_STATUS as OSTA
 from vnpy.config import gatewayconfig
 from vnpy.utility.file import getTempPath
 from vnpy.gateway.base_gateway import *
@@ -25,58 +31,58 @@ from vnpy.gateway.ctpGateway.ctp_data_type import defineDict
 # 以下为一些VT类型和CTP类型的映射字典
 # 价格类型映射
 priceTypeMap = {}
-priceTypeMap[PRICETYPE_LIMITPRICE] = defineDict["THOST_FTDC_OPT_LimitPrice"]
-priceTypeMap[PRICETYPE_MARKETPRICE] = defineDict["THOST_FTDC_OPT_AnyPrice"]
+priceTypeMap[CPRI.PRICETYPE_LIMITPRICE] = defineDict["THOST_FTDC_OPT_LimitPrice"]
+priceTypeMap[CPRI.PRICETYPE_MARKETPRICE] = defineDict["THOST_FTDC_OPT_AnyPrice"]
 priceTypeMapReverse = {v: k for k, v in priceTypeMap.items()}
 
 # 方向类型映射
 directionMap = {}
-directionMap[DIRECTION_LONG] = defineDict['THOST_FTDC_D_Buy']
-directionMap[DIRECTION_SHORT] = defineDict['THOST_FTDC_D_Sell']
+directionMap[CDIR.DIRECTION_LONG] = defineDict['THOST_FTDC_D_Buy']
+directionMap[CDIR.DIRECTION_SHORT] = defineDict['THOST_FTDC_D_Sell']
 directionMapReverse = {v: k for k, v in directionMap.items()}
 
 # 开平类型映射
 offsetMap = {}
-offsetMap[OFFSET_OPEN] = defineDict['THOST_FTDC_OF_Open']
-offsetMap[OFFSET_CLOSE] = defineDict['THOST_FTDC_OF_Close']
-offsetMap[OFFSET_CLOSETODAY] = defineDict['THOST_FTDC_OF_CloseToday']
-offsetMap[OFFSET_CLOSEYESTERDAY] = defineDict['THOST_FTDC_OF_CloseYesterday']
+offsetMap[COFF.OFFSET_OPEN] = defineDict['THOST_FTDC_OF_Open']
+offsetMap[COFF.OFFSET_CLOSE] = defineDict['THOST_FTDC_OF_Close']
+offsetMap[COFF.OFFSET_CLOSETODAY] = defineDict['THOST_FTDC_OF_CloseToday']
+offsetMap[COFF.OFFSET_CLOSEYESTERDAY] = defineDict['THOST_FTDC_OF_CloseYesterday']
 offsetMapReverse = {v:k for k,v in offsetMap.items()}
 
 # 交易所类型映射
 exchangeMap = {}
-exchangeMap[EXCHANGE_CFFEX] = 'CFFEX'
-exchangeMap[EXCHANGE_SHFE] = 'SHFE'
-exchangeMap[EXCHANGE_CZCE] = 'CZCE'
-exchangeMap[EXCHANGE_DCE] = 'DCE'
-exchangeMap[EXCHANGE_SSE] = 'SSE'
-exchangeMap[EXCHANGE_SZSE] = 'SZSE'
-exchangeMap[EXCHANGE_INE] = 'INE'
-exchangeMap[EXCHANGE_UNKNOWN] = ''
+exchangeMap[CEXC.EXCHANGE_CFFEX] = 'CFFEX'
+exchangeMap[CEXC.EXCHANGE_SHFE] = 'SHFE'
+exchangeMap[CEXC.EXCHANGE_CZCE] = 'CZCE'
+exchangeMap[CEXC.EXCHANGE_DCE] = 'DCE'
+exchangeMap[CEXC.EXCHANGE_SSE] = 'SSE'
+exchangeMap[CEXC.EXCHANGE_SZSE] = 'SZSE'
+exchangeMap[CEXC.EXCHANGE_INE] = 'INE'
+exchangeMap[CEXC.EXCHANGE_UNKNOWN] = ''
 exchangeMapReverse = {v:k for k,v in exchangeMap.items()}
 
 # 持仓类型映射
 posiDirectionMap = {}
-posiDirectionMap[DIRECTION_NET] = defineDict["THOST_FTDC_PD_Net"]
-posiDirectionMap[DIRECTION_LONG] = defineDict["THOST_FTDC_PD_Long"]
-posiDirectionMap[DIRECTION_SHORT] = defineDict["THOST_FTDC_PD_Short"]
+posiDirectionMap[CDIR.DIRECTION_NET] = defineDict["THOST_FTDC_PD_Net"]
+posiDirectionMap[CDIR.DIRECTION_LONG] = defineDict["THOST_FTDC_PD_Long"]
+posiDirectionMap[CDIR.DIRECTION_SHORT] = defineDict["THOST_FTDC_PD_Short"]
 posiDirectionMapReverse = {v:k for k,v in posiDirectionMap.items()}
 
 # 产品类型映射
 productClassMap = {}
-productClassMap[PRODUCT_FUTURES] = defineDict["THOST_FTDC_PC_Futures"]
-productClassMap[PRODUCT_OPTION] = defineDict["THOST_FTDC_PC_Options"]
-productClassMap[PRODUCT_COMBINATION] = defineDict["THOST_FTDC_PC_Combination"]
+productClassMap[CPRO.PRODUCT_FUTURES] = defineDict["THOST_FTDC_PC_Futures"]
+productClassMap[CPRO.PRODUCT_OPTION] = defineDict["THOST_FTDC_PC_Options"]
+productClassMap[CPRO.PRODUCT_COMBINATION] = defineDict["THOST_FTDC_PC_Combination"]
 productClassMapReverse = {v:k for k,v in productClassMap.items()}
-productClassMapReverse[defineDict["THOST_FTDC_PC_ETFOption"]] = PRODUCT_OPTION
-productClassMapReverse[defineDict["THOST_FTDC_PC_Stock"]] = PRODUCT_EQUITY
+productClassMapReverse[defineDict["THOST_FTDC_PC_ETFOption"]] = CPRO.PRODUCT_OPTION
+productClassMapReverse[defineDict["THOST_FTDC_PC_Stock"]] = CPRO.PRODUCT_EQUITY
 
 # 委托状态映射
 statusMap = {}
-statusMap[STATUS_ALLTRADED] = defineDict["THOST_FTDC_OST_AllTraded"]
-statusMap[STATUS_PARTTRADED] = defineDict["THOST_FTDC_OST_PartTradedQueueing"]
-statusMap[STATUS_NOTTRADED] = defineDict["THOST_FTDC_OST_NoTradeQueueing"]
-statusMap[STATUS_CANCELLED] = defineDict["THOST_FTDC_OST_Canceled"]
+statusMap[OSTA.STATUS_ALLTRADED] = defineDict["THOST_FTDC_OST_AllTraded"]
+statusMap[OSTA.STATUS_PARTTRADED] = defineDict["THOST_FTDC_OST_PartTradedQueueing"]
+statusMap[OSTA.STATUS_NOTTRADED] = defineDict["THOST_FTDC_OST_NoTradeQueueing"]
+statusMap[OSTA.STATUS_CANCELLED] = defineDict["THOST_FTDC_OST_Canceled"]
 statusMapReverse = {v:k for k,v in statusMap.items()}
 
 # 全局字典, key:symbol, value:exchange
@@ -89,8 +95,8 @@ NIGHT_TRADING = datetime(1900, 1, 1, 20).time()
 class ctpGateway(BaseGateway):
     """CTP接口"""
 
-    def __init__(self, eventEngine, gatewayName='CTP'):
-        super(ctpGateway, self).__init__(eventEngine, gatewayName)
+    def __init__(self, mainEngine, gatewayName='CTP'):
+        super(ctpGateway, self).__init__(mainEngine, gatewayName)
 
         self.mdApi = CtpMdApi(self)     # 行情API
         self.tdApi = CtpTdApi(self)     # 交易API
@@ -127,7 +133,7 @@ class ctpGateway(BaseGateway):
         self.tdApi.connect(userID, password, brokerID, tdAddress, authCode, userProductInfo)
 
         # 初始化并启动查询
-        self.initQuery()
+        self.startQuery()
 
     def subscribe(self, subscribeReq):
         self.mdApi.subscribe(subscribeReq)
@@ -150,17 +156,15 @@ class ctpGateway(BaseGateway):
         if self.tdConnected:
             self.tdApi.close()
 
-    def initQuery(self):
-        """初始化连续查询"""
+    def startQuery(self):
+        """启动连续查询"""
         if self.qryEnabled:
             # 需要循环的查询函数列表
             self.qryFunctionList = [self.qryAccount, self.qryPosition]
-
             self.qryCount = 0           # 查询触发倒计时
             self.qryTrigger = 2         # 查询触发点
             self.qryNextFunction = 0    # 上次运行的查询函数索引
-
-            self.startQuery()
+            self.mainEngine.registerEvent(C_EVENT.EVENT_TIMER, self.query)
 
     def query(self, event):
         """注册到事件处理引擎上的查询函数"""
@@ -178,10 +182,6 @@ class ctpGateway(BaseGateway):
             self.qryNextFunction += 1
             if self.qryNextFunction == len(self.qryFunctionList):
                 self.qryNextFunction = 0
-
-    def startQuery(self):
-        """启动连续查询"""
-        self.eventEngine.register(EVENT_TIMER, self.query)
 
     def setQryEnabled(self, qryEnabled):
         """设置是否要启动循环查询"""

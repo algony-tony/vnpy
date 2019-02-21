@@ -6,9 +6,12 @@ import shelve
 import json
 from copy import copy
 
-from vnpy.config import globalSetting
-from vnpy.vtConstant import *
 from vnpy.vtConstant import C_EVENT
+from vnpy.vtConstant import C_EXCHANGE as CEXC
+from vnpy.vtConstant import C_DIRECTION as CDIR
+from vnpy.vtConstant import C_OFFSET as COFF
+from vnpy.vtConstant import C_ORDER_STATUS as OSTA
+from vnpy.config import globalSetting
 from vnpy.utility.file import getTempPath
 from vnpy.utility.logging_mixin import LoggingMixin
 
@@ -18,7 +21,7 @@ class DataEngine(LoggingMixin):
     contractFilePath = getTempPath('ContractData.vt')
     contractJSONFilePath = getTempPath('ContractData.json')
 
-    FINISHED_STATUS = [STATUS_ALLTRADED, STATUS_REJECTED, STATUS_CANCELLED]
+    FinishedStatus = [OSTA.STATUS_ALLTRADED, OSTA.STATUS_REJECTED, OSTA.STATUS_CANCELLED]
 
     def __init__(self, eventEngine):
         self.log.debug('DataEngine initing...')
@@ -70,7 +73,7 @@ class DataEngine(LoggingMixin):
         self.orderDict[order.vtOrderID] = order
 
         # 移除交易完成订单
-        if order.status in self.FINISHED_STATUS:
+        if order.status in self.FinishedStatus:
             if order.vtOrderID in self.workingOrderDict:
                 del self.workingOrderDict[order.vtOrderID]
         else:
@@ -179,7 +182,7 @@ class DataEngine(LoggingMixin):
             if contract:
                 detail.exchange = contract.exchange
                 # 上期所合约
-                if contract.exchange == EXCHANGE_SHFE:
+                if contract.exchange == CEXC.EXCHANGE_SHFE:
                     detail.mode = detail.MODE_SHFE
 
                 # 检查是否有平今惩罚
@@ -211,7 +214,7 @@ class DataEngine(LoggingMixin):
 
 class PositionDetail(LoggingMixin):
     """本地维护的持仓信息"""
-    WORKING_STATUS = [STATUS_UNKNOWN, STATUS_NOTTRADED, STATUS_PARTTRADED]
+    WorkingStatus = [OSTA.STATUS_UNKNOWN, OSTA.STATUS_NOTTRADED, OSTA.STATUS_PARTTRADED]
 
     MODE_NORMAL = 'normal'          # 普通模式
     MODE_SHFE = 'shfe'              # 上期所今昨分别平仓
@@ -258,20 +261,20 @@ class PositionDetail(LoggingMixin):
     def updateTrade(self, trade):
         self.log.debug('成交更新')
         # 多头
-        if trade.direction is DIRECTION_LONG:
+        if trade.direction is CDIR.DIRECTION_LONG:
             # 开仓
-            if trade.offset is OFFSET_OPEN:
+            if trade.offset is COFF.OFFSET_OPEN:
                 self.longTd += trade.volume
             # 平今
-            elif trade.offset is OFFSET_CLOSETODAY:
+            elif trade.offset is COFF.OFFSET_CLOSETODAY:
                 self.shortTd -= trade.volume
             # 平昨
-            elif trade.offset is OFFSET_CLOSEYESTERDAY:
+            elif trade.offset is COFF.OFFSET_CLOSEYESTERDAY:
                 self.shortYd -= trade.volume
             # 平仓
-            elif trade.offset is OFFSET_CLOSE:
+            elif trade.offset is COFF.OFFSET_CLOSE:
                 # 上期所等同于平昨
-                if self.exchange is EXCHANGE_SHFE:
+                if self.exchange is CEXC.EXCHANGE_SHFE:
                     self.shortYd -= trade.volume
                 # 非上期所，优先平今
                 else:
@@ -281,20 +284,20 @@ class PositionDetail(LoggingMixin):
                         self.shortYd += self.shortTd
                         self.shortTd = 0
         # 空头
-        elif trade.direction is DIRECTION_SHORT:
+        elif trade.direction is CDIR.DIRECTION_SHORT:
             # 开仓
-            if trade.offset is OFFSET_OPEN:
+            if trade.offset is COFF.OFFSET_OPEN:
                 self.shortTd += trade.volume
             # 平今
-            elif trade.offset is OFFSET_CLOSETODAY:
+            elif trade.offset is COFF.OFFSET_CLOSETODAY:
                 self.longTd -= trade.volume
             # 平昨
-            elif trade.offset is OFFSET_CLOSEYESTERDAY:
+            elif trade.offset is COFF.OFFSET_CLOSEYESTERDAY:
                 self.longYd -= trade.volume
             # 平仓
-            elif trade.offset is OFFSET_CLOSE:
+            elif trade.offset is COFF.OFFSET_CLOSE:
                 # 上期所等同于平昨
-                if self.exchange is EXCHANGE_SHFE:
+                if self.exchange is CEXC.EXCHANGE_SHFE:
                     self.longYd -= trade.volume
                 # 非上期所，优先平今
                 else:
@@ -312,7 +315,7 @@ class PositionDetail(LoggingMixin):
     def updateOrder(self, order):
         self.log.debug('委托更新')
         # 将活动委托缓存下来
-        if order.status in self.WORKING_STATUS:
+        if order.status in self.WorkingStatus:
             self.workingOrderDict[order.vtOrderID] = order
 
         # 移除缓存中已经完成的委托
@@ -325,13 +328,13 @@ class PositionDetail(LoggingMixin):
 
     def updatePosition(self, pos):
         self.log.debug('持仓更新')
-        if pos.direction is DIRECTION_LONG:
+        if pos.direction is CDIR.DIRECTION_LONG:
             self.longPos = pos.position
             self.longYd = pos.ydPosition
             self.longTd = self.longPos - self.longYd
             self.longPnl = pos.positionProfit
             self.longPrice = pos.price
-        elif pos.direction is DIRECTION_SHORT:
+        elif pos.direction is CDIR.DIRECTION_SHORT:
             self.shortPos = pos.position
             self.shortYd = pos.ydPosition
             self.shortTd = self.shortPos - self.shortYd
@@ -363,8 +366,8 @@ class PositionDetail(LoggingMixin):
     def calculatePrice(self, trade):
         self.log.debug('计算持仓均价(基于成交数据)')
         # 只有开仓会影响持仓均价
-        if trade.offset == OFFSET_OPEN:
-            if trade.direction == DIRECTION_LONG:
+        if trade.offset == COFF.OFFSET_OPEN:
+            if trade.direction == CDIR.DIRECTION_LONG:
                 cost = self.longPrice * self.longPos
                 cost += trade.volume * trade.price
                 newPos = self.longPos + trade.volume
@@ -400,30 +403,30 @@ class PositionDetail(LoggingMixin):
             frozenVolume = order.totalVolume - order.tradedVolume
 
             # 多头委托
-            if order.direction is DIRECTION_LONG:
+            if order.direction is CDIR.DIRECTION_LONG:
                 # 平今
-                if order.offset is OFFSET_CLOSETODAY:
+                if order.offset is COFF.OFFSET_CLOSETODAY:
                     self.shortTdFrozen += frozenVolume
                 # 平昨
-                elif order.offset is OFFSET_CLOSEYESTERDAY:
+                elif order.offset is COFF.OFFSET_CLOSEYESTERDAY:
                     self.shortYdFrozen += frozenVolume
                 # 平仓
-                elif order.offset is OFFSET_CLOSE:
+                elif order.offset is COFF.OFFSET_CLOSE:
                     self.shortTdFrozen += frozenVolume
 
                     if self.shortTdFrozen > self.shortTd:
                         self.shortYdFrozen += (self.shortTdFrozen - self.shortTd)
                         self.shortTdFrozen = self.shortTd
             # 空头委托
-            elif order.direction is DIRECTION_SHORT:
+            elif order.direction is CDIR.DIRECTION_SHORT:
                 # 平今
-                if order.offset is OFFSET_CLOSETODAY:
+                if order.offset is COFF.OFFSET_CLOSETODAY:
                     self.longTdFrozen += frozenVolume
                 # 平昨
-                elif order.offset is OFFSET_CLOSEYESTERDAY:
+                elif order.offset is COFF.OFFSET_CLOSEYESTERDAY:
                     self.longYdFrozen += frozenVolume
                 # 平仓
-                elif order.offset is OFFSET_CLOSE:
+                elif order.offset is COFF.OFFSET_CLOSE:
                     self.longTdFrozen += frozenVolume
 
                     if self.longTdFrozen > self.longTd:
@@ -443,11 +446,11 @@ class PositionDetail(LoggingMixin):
         # 上期所模式拆分今昨，优先平今
         elif self.mode is self.MODE_SHFE:
             # 开仓无需转换
-            if req.offset is OFFSET_OPEN:
+            if req.offset is COFF.OFFSET_OPEN:
                 return [req]
 
             # 多头
-            if req.direction is DIRECTION_LONG:
+            if req.direction is CDIR.DIRECTION_LONG:
                 posAvailable = self.shortPos - self.shortPosFrozen
                 tdAvailable = self.shortTd- self.shortTdFrozen
                 ydAvailable = self.shortYd - self.shortYdFrozen
@@ -462,7 +465,7 @@ class PositionDetail(LoggingMixin):
                 return []
             # 平仓量小于今可用，全部平今
             elif req.volume <= tdAvailable:
-                req.offset = OFFSET_CLOSETODAY
+                req.offset = COFF.OFFSET_CLOSETODAY
                 return [req]
             # 平仓量大于今可用，平今再平昨
             else:
@@ -470,12 +473,12 @@ class PositionDetail(LoggingMixin):
 
                 if tdAvailable > 0:
                     reqTd = copy(req)
-                    reqTd.offset = OFFSET_CLOSETODAY
+                    reqTd.offset = COFF.OFFSET_CLOSETODAY
                     reqTd.volume = tdAvailable
                     l.append(reqTd)
 
                 reqYd = copy(req)
-                reqYd.offset = OFFSET_CLOSEYESTERDAY
+                reqYd.offset = COFF.OFFSET_CLOSEYESTERDAY
                 reqYd.volume = req.volume - tdAvailable
                 l.append(reqYd)
 
@@ -484,7 +487,7 @@ class PositionDetail(LoggingMixin):
         # 平今惩罚模式，没有今仓则平昨，否则锁仓
         elif self.mode is self.MODE_TDPENALTY:
             # 多头
-            if req.direction is DIRECTION_LONG:
+            if req.direction is CDIR.DIRECTION_LONG:
                 td = self.shortTd
                 ydAvailable = self.shortYd - self.shortYdFrozen
             # 空头
@@ -496,14 +499,14 @@ class PositionDetail(LoggingMixin):
 
             # 如果有今仓，则只能开仓（或锁仓）
             if td:
-                req.offset = OFFSET_OPEN
+                req.offset = COFF.OFFSET_OPEN
                 return [req]
             # 如果平仓量小于昨可用，全部平昨
             elif req.volume <= ydAvailable:
-                if self.exchange is EXCHANGE_SHFE:
-                    req.offset = OFFSET_CLOSEYESTERDAY
+                if self.exchange is CEXC.EXCHANGE_SHFE:
+                    req.offset = COFF.OFFSET_CLOSEYESTERDAY
                 else:
-                    req.offset = OFFSET_CLOSE
+                    req.offset = COFF.OFFSET_CLOSE
                 return [req]
             # 平仓量大于昨可用，平仓再反向开仓
             else:
@@ -511,16 +514,16 @@ class PositionDetail(LoggingMixin):
 
                 if ydAvailable > 0:
                     reqClose = copy(req)
-                    if self.exchange is EXCHANGE_SHFE:
-                        reqClose.offset = OFFSET_CLOSEYESTERDAY
+                    if self.exchange is CEXC.EXCHANGE_SHFE:
+                        reqClose.offset = COFF.OFFSET_CLOSEYESTERDAY
                     else:
-                        reqClose.offset = OFFSET_CLOSE
+                        reqClose.offset = COFF.OFFSET_CLOSE
                     reqClose.volume = ydAvailable
 
                     l.append(reqClose)
 
                 reqOpen = copy(req)
-                reqOpen.offset = OFFSET_OPEN
+                reqOpen.offset = COFF.OFFSET_OPEN
                 reqOpen.volume = req.volume - ydAvailable
                 l.append(reqOpen)
 
