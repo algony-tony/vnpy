@@ -1,27 +1,27 @@
 # encoding: UTF-8
 
-# 默认空值
-EMPTY_STRING = ''
-EMPTY_UNICODE = ''
-EMPTY_INT = 0
-EMPTY_FLOAT = 0.0
+
+class C_MONGO_DB_NAME:
+    # mongodb database name constant
+    LOG_DB_NAME = 'VnTrader_Log_Db'
+    SETTING_DB_NAME = 'VnTrader_Setting_Db'
+    POSITION_DB_NAME = 'VnTrader_Position_Db'
+    TICK_DB_NAME = 'VnTrader_Tick_Db'
+    DAILY_DB_NAME = 'VnTrader_Daily_Db'
+    MINUTE_DB_NAME = 'VnTrader_1Min_Db'
 
 
-# Event 预定义类型
-## 系统相关
-EVENT_TIMER = 'eTimer'                  # 计时器事件，每隔1秒发送一次
-EVENT_LOG = 'eLog'                      # 日志事件，全局通用
-## Gateway 相关
-EVENT_TICK = 'eTick.'                   # TICK行情事件，可后接具体的vtSymbol
-EVENT_TRADE = 'eTrade.'                 # 成交回报事件
-EVENT_ORDER = 'eOrder.'                 # 报单回报事件
-EVENT_POSITION = 'ePosition.'           # 持仓回报事件
-EVENT_ACCOUNT = 'eAccount.'             # 账户回报事件
-EVENT_CONTRACT = 'eContract.'           # 合约基础信息回报事件
-EVENT_ERROR = 'eError.'                 # 错误回报事件
-EVENT_HISTORY = 'eHistory.'             # K线数据查询回报事件
-## App 相关
-# EVENT_CTA_STRATEGY = 'eCtaStrategy.'    # CTA策略状态变化事件
+class C_EVENT:
+    # Event 预定义类型
+    EVENT_TIMER = 'eTimer'                  # 计时器事件，每隔1秒发送一次
+    EVENT_TICK = 'eTick.'                   # TICK行情事件，可后接具体的vtSymbol
+    EVENT_TRADE = 'eTrade.'                 # 成交回报事件
+    EVENT_ORDER = 'eOrder.'                 # 报单回报事件
+    EVENT_POSITION = 'ePosition.'           # 持仓回报事件
+    EVENT_ACCOUNT = 'eAccount.'             # 账户回报事件
+    EVENT_CONTRACT = 'eContract.'           # 合约基础信息回报事件
+    EVENT_ERROR = 'eError.'                 # 错误回报事件
+    EVENT_HISTORY = 'eHistory.'             # K线数据查询回报事件
 
 
 # 方向常量
@@ -121,8 +121,6 @@ CURRENCY_HKD = 'HKD'            # 港币
 CURRENCY_UNKNOWN = 'UNKNOWN'    # 未知货币
 CURRENCY_NONE = ''              # 空货币
 
-# 数据库
-LOG_DB_NAME = 'VnTrader_Log_Db'
 
 # 接口类型
 GATEWAYTYPE_EQUITY = 'equity'                   # 股票、ETF、债券

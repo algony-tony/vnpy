@@ -8,6 +8,7 @@ from copy import copy
 
 from vnpy.config import globalSetting
 from vnpy.vtConstant import *
+from vnpy.vtConstant import C_EVENT
 from vnpy.utility.file import getTempPath
 from vnpy.utility.logging_mixin import LoggingMixin
 
@@ -40,12 +41,12 @@ class DataEngine(LoggingMixin):
         self.registerEvent()
 
     def registerEvent(self):
-        self.eventEngine.register(EVENT_TICK, self.UpdateTickDictFromEvent)
-        self.eventEngine.register(EVENT_CONTRACT, self.UpdateContractDictFromEvent)
-        self.eventEngine.register(EVENT_ORDER, self.UpdateOrderDictFromEvent)
-        self.eventEngine.register(EVENT_TRADE, self.UpdateTradeDictFromEvent)
-        self.eventEngine.register(EVENT_POSITION, self.UpdatePositionDictFromEvent)
-        self.eventEngine.register(EVENT_ACCOUNT, self.UpdateAccountDictFromEvent)
+        self.eventEngine.register(C_EVENT.EVENT_TICK, self.UpdateTickDictFromEvent)
+        self.eventEngine.register(C_EVENT.EVENT_CONTRACT, self.UpdateContractDictFromEvent)
+        self.eventEngine.register(C_EVENT.EVENT_ORDER, self.UpdateOrderDictFromEvent)
+        self.eventEngine.register(C_EVENT.EVENT_TRADE, self.UpdateTradeDictFromEvent)
+        self.eventEngine.register(C_EVENT.EVENT_POSITION, self.UpdatePositionDictFromEvent)
+        self.eventEngine.register(C_EVENT.EVENT_ACCOUNT, self.UpdateAccountDictFromEvent)
 
     def UpdateTickDictFromEvent(self, event):
         # TickData

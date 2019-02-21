@@ -6,18 +6,9 @@ from time import sleep
 from datetime import datetime, time
 
 from vnpy.bin.mainEngine import MainEngine
-from vnpy.utility.eventEngine import EventEngine2
 from vnpy.gateway import ctpGateway
 from vnpy.app import ctaStrategy
 
-
-def processErrorEvent(event):
-    """
-    处理错误事件
-    错误信息在每次登陆后，会将当日所有已产生的均推送一遍，所以不适合写入日志
-    """
-    error = event.dict_['data']
-    print('错误代码: %s, 错误信息: %s' %(error.errorID, error.errorMsg))
 
 def runChildProcess():
     """子进程运行函数"""

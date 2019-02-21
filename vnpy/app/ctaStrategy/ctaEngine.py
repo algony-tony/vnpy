@@ -14,9 +14,11 @@ from datetime import datetime, timedelta
 from copy import copy
 
 from vnpy.vtConstant import *
+from vnpy.vtConstant import C_EVENT
+from vnpy.vtConstant import C_MONGO_DB_NAME as C_DB
 from vnpy.base_class import Event, TickData, BarData
 from vnpy.base_class import OrderReq, CancelOrderReq
-from vnpy.vtFunction import todayDate, getJsonPath
+from vnpy.utility.file import todayDate, getJsonPath
 from vnpy.app import AppEngine
 from vnpy.config import globalSetting
 
@@ -31,7 +33,6 @@ class CtaEngine(AppEngine):
     STATUS_FINISHED = set([STATUS_REJECTED, STATUS_CANCELLED, STATUS_ALLTRADED])
 
     def __init__(self, mainEngine):
-        """Constructor"""
         self.mainEngine = mainEngine
         self.eventEngine = mainEngine.eventEngine
         self.today = todayDate()
@@ -87,9 +88,9 @@ class CtaEngine(AppEngine):
                 self.loadStrategy(setting)
 
     def registerEvent(self):
-        self.eventEngine.register(EVENT_TICK, self.processTickEvent)
-        self.eventEngine.register(EVENT_ORDER, self.processOrderEvent)
-        self.eventEngine.register(EVENT_TRADE, self.processTradeEvent)
+        self.eventEngine.register(C_EVENT.EVENT_TICK, self.processTickEvent)
+        self.eventEngine.register(C_EVENT.EVENT_ORDER, self.processOrderEvent)
+        self.eventEngine.register(C_EVENT.EVENT_TRADE, self.processTradeEvent)
 
     def initAll(self):
         # 初始化策略, 同步策略持仓, 订阅行情
@@ -97,17 +98,14 @@ class CtaEngine(AppEngine):
             self.initStrategy(name)
 
     def startAll(self):
-        """全部启动"""
         for name in self.strategyDict.keys():
             self.startStrategy(name)
 
     def stopAll(self):
-        """全部停止"""
         for name in self.strategyDict.keys():
             self.stopStrategy(name)
 
     def sendOrder(self, vtSymbol, orderType, price, volume, strategy):
-        """发单"""
         contract = self.mainEngine.getContract(vtSymbol)
 
         req = OrderReq()
@@ -353,7 +351,7 @@ class CtaEngine(AppEngine):
     def loadBar(self, dbName, collectionName, days):
         """从数据库中读取Bar数据，startDate是datetime对象"""
         # 优先尝试从RQData获取数据
-        if dbName == MINUTE_DB_NAME and collectionName.upper() in self.rqSymbolSet:
+        if dbName == C_DB.MINUTE_DB_NAME and collectionName.upper() in self.rqSymbolSet:
             l = self.loadRqBar(collectionName, days)
             return l
 
@@ -385,7 +383,6 @@ class CtaEngine(AppEngine):
         return l
 
     def loadStrategy(self, setting):
-        """载入策略"""
         try:
             name = setting['name']
             className = setting['className']
@@ -417,7 +414,6 @@ class CtaEngine(AppEngine):
             l.append(strategy)
 
     def initStrategy(self, name):
-        """初始化策略"""
         if name in self.strategyDict:
             strategy = self.strategyDict[name]
             if not strategy.inited:
@@ -431,7 +427,6 @@ class CtaEngine(AppEngine):
             self.writeLog('策略实例不存在: %s' %name)
 
     def startStrategy(self, name):
-        """启动策略"""
         if name in self.strategyDict:
             strategy = self.strategyDict[name]
 
@@ -442,7 +437,6 @@ class CtaEngine(AppEngine):
             self.writeLog('策略实例不存在: %s' %name)
 
     def stopStrategy(self, name):
-        """停止策略"""
         if name in self.strategyDict:
             strategy = self.strategyDict[name]
 
@@ -520,7 +514,7 @@ class CtaEngine(AppEngine):
         for key in strategy.syncList:
             d[key] = strategy.__getattribute__(key)
 
-        self.mainEngine.dbUpdate(POSITION_DB_NAME, strategy.className,
+        self.mainEngine.dbUpdate(C_DB.POSITION_DB_NAME, strategy.className,
                                  d, flt, True)
 
         content = '策略%s同步数据保存成功，当前持仓%s' %(strategy.name, strategy.pos)
@@ -530,7 +524,7 @@ class CtaEngine(AppEngine):
         """从数据库载入策略的持仓情况"""
         flt = {'name': strategy.name,
                'vtSymbol': strategy.vtSymbol}
-        syncData = self.mainEngine.dbQuery(POSITION_DB_NAME, strategy.className, flt)
+        syncData = self.mainEngine.dbQuery(C_DB.POSITION_DB_NAME, strategy.className, flt)
 
         if not syncData:
             return
@@ -547,10 +541,6 @@ class CtaEngine(AppEngine):
             return price
         else:
             return round(price/priceTick, 0)*priceTick
-
-    def stop(self):
-        """停止"""
-        pass
 
     def cancelAll(self, name):
         """全部撤单"""
@@ -623,6 +613,9 @@ class CtaEngine(AppEngine):
             l.append(bar)
 
         return l
+
+    def stopAll(self):
+        pass
 
     def writeLog(self, content):
         self.log.info(content)
