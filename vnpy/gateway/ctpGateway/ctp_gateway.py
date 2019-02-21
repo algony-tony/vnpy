@@ -21,6 +21,8 @@ from vnpy.vtConstant import C_PRICETYPE as CPRI
 from vnpy.vtConstant import C_PRODUCT as CPRO
 from vnpy.vtConstant import C_ORDER_STATUS as OSTA
 from vnpy.config import gatewayconfig
+from vnpy.base_class import TickData, AccountData, OrderData
+from vnpy.base_class import ContractData, PositionData, TradeData
 from vnpy.utility.file import getTempPath
 from vnpy.gateway.base_gateway import *
 from vnpy.gateway.ctpGateway.vnctpmd import MdApi
