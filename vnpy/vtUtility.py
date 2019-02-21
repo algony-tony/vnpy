@@ -15,7 +15,6 @@ class BarGenerator(object):
     """
 
     def __init__(self, onBar, xmin=0, onXminBar=None):
-        """Constructor"""
         self.bar = None             # 1分钟K线对象
         self.onBar = onBar          # 1分钟K线回调函数
 
@@ -26,7 +25,6 @@ class BarGenerator(object):
         self.lastTick = None        # 上一TICK缓存对象
 
     def updateTick(self, tick):
-        """TICK更新"""
         newMinute = False   # 默认不是新的一分钟
 
         # 尚未创建对象
@@ -36,7 +34,7 @@ class BarGenerator(object):
         # 新的一分钟
         elif self.bar.datetime.minute != tick.datetime.minute:
             # 生成上一分钟K线的时间戳
-            self.bar.datetime = self.bar.datetime.replace(second=0, microsecond=0)  # 将秒和微秒设为0
+            self.bar.datetime = self.bar.datetime.replace(second=0, microsecond=0)
             self.bar.date = self.bar.datetime.strftime('%Y%m%d')
             self.bar.time = self.bar.datetime.strftime('%H:%M:%S.%f')
 
@@ -125,7 +123,6 @@ class ArrayManager(object):
     """
 
     def __init__(self, size=100):
-        """Constructor"""
         self.count = 0                      # 缓存计数
         self.size = size                    # 缓存大小
         self.inited = False                 # True if count>=size

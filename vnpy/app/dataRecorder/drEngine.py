@@ -18,7 +18,7 @@ from vnpy.app import AppEngine
 from vnpy.vtUtility import BarGenerator
 from vnpy.vtConstant import C_EVENT
 from vnpy.vtConstant import C_MONGO_DB_NAME as C_DB
-from vnpy.base_class import Event, SubscribeReq, LogData, BarData, TickData
+from vnpy.base_class import Event, SubscribeReq, BarData, TickData
 from vnpy.utility.file import todayDate, getJsonPath
 
 
@@ -29,7 +29,6 @@ class DrEngine(AppEngine):
     settingFilePath = getJsonPath(settingFileName, __file__)
 
     def __init__(self, mainEngine):
-        """Constructor"""
         self.mainEngine = mainEngine
         self.today = todayDate()
 
@@ -221,7 +220,7 @@ class DrEngine(AppEngine):
                 activeSymbol = self.activeSymbolDict[vtSymbol]
                 self.insertData(C_DB.TICK_DB_NAME, activeSymbol, tick)
 
-            self.writeDrLog('Tick {symbol}, Time:{time}, last:{last}, bid:{bid}, ask:{ask}'.format(
+            self.writeLog('Tick {symbol}, Time:{time}, last:{last}, bid:{bid}, ask:{ask}'.format(
                 symbol=tick.vtSymbol,
                 time=tick.time,
                 last=tick.lastPrice,
@@ -238,7 +237,7 @@ class DrEngine(AppEngine):
             activeSymbol = self.activeSymbolDict[vtSymbol]
             self.insertData(C_DB.MINUTE_DB_NAME, activeSymbol, bar)
 
-        self.writeDrLog('Bar {symbol}, Time:{time}, O:{open}, H:{high}, L:{low}, C:{close}'.format(
+        self.writeLog('Bar {symbol}, Time:{time}, O:{open}, H:{high}, L:{low}, C:{close}'.format(
             symbol=bar.vtSymbol,
             time=bar.time,
             open=bar.open,
@@ -265,7 +264,7 @@ class DrEngine(AppEngine):
                 try:
                     self.mainEngine.dbInsert(dbName, collectionName, d)
                 except DuplicateKeyError:
-                    self.writeDrLog('键值重复插入失败, 报错信息: %s' %traceback.format_exc())
+                    self.writeLog('键值重复插入失败, 报错信息: %s' %traceback.format_exc())
             except Empty:
                 pass
 
@@ -274,6 +273,6 @@ class DrEngine(AppEngine):
             self.active = False
             self.thread.join()
 
-    def writeDrLog(self, content):
+    def writeLog(self, content):
         self.log.info(content)
 
