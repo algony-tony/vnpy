@@ -3,12 +3,15 @@
 import time
 
 from vnpy.vtConstant import C_EVENT
-from vnpy.base_class import EVENT
+from vnpy.base_class import Event
 from vnpy.utility.logging_mixin import LoggingMixin
 
 
 class BaseGateway(LoggingMixin):
-    """交易接口"""
+    """
+    交易接口
+    在接口里 mainEngine 和 eventEngine 是可以相互替换的
+    """
 
     def __init__(self, mainEngine, gatewayName):
         self.mainEngine = mainEngine

@@ -13,7 +13,7 @@ from vnpy.app import ctaStrategy
 def runChildProcess():
     """子进程运行函数"""
 
-    me = MainEngine()
+    me = MainEngine(EventEngineSleepInterval=0.5)
     me.addGateway(ctpGateway)
     me.addApp(ctaStrategy)
     me.startAll()

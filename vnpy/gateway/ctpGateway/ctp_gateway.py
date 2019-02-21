@@ -94,7 +94,6 @@ NIGHT_TRADING = datetime(1900, 1, 1, 20).time()
 
 class ctpGateway(BaseGateway):
     """CTP接口"""
-
     def __init__(self, mainEngine, gatewayName='CTP'):
         super(ctpGateway, self).__init__(mainEngine, gatewayName)
 

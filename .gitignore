@@ -72,3 +72,6 @@ examples/CtaTrading/CTA_setting.json
 examples/CtaTrading/CTP_connect.json
 examples/CtaTrading/VT_setting.json
 vnpy/config/gateway.ini
+*.swp
+examples/DataRecording/CTP_connect.json
+examples/DataRecording/DR_setting.json

@@ -23,9 +23,9 @@ class DataEngine(LoggingMixin):
 
     FinishedStatus = [OSTA.STATUS_ALLTRADED, OSTA.STATUS_REJECTED, OSTA.STATUS_CANCELLED]
 
-    def __init__(self, eventEngine):
+    def __init__(self, mainEngine):
         self.log.debug('DataEngine initing...')
-        self.eventEngine = eventEngine
+        self.mainEngine = mainEngine
 
         self.tickDict = {}
         self.contractDict = {}
@@ -44,12 +44,12 @@ class DataEngine(LoggingMixin):
         self.registerEvent()
 
     def registerEvent(self):
-        self.eventEngine.register(C_EVENT.EVENT_TICK, self.UpdateTickDictFromEvent)
-        self.eventEngine.register(C_EVENT.EVENT_CONTRACT, self.UpdateContractDictFromEvent)
-        self.eventEngine.register(C_EVENT.EVENT_ORDER, self.UpdateOrderDictFromEvent)
-        self.eventEngine.register(C_EVENT.EVENT_TRADE, self.UpdateTradeDictFromEvent)
-        self.eventEngine.register(C_EVENT.EVENT_POSITION, self.UpdatePositionDictFromEvent)
-        self.eventEngine.register(C_EVENT.EVENT_ACCOUNT, self.UpdateAccountDictFromEvent)
+        self.mainEngine.registerEvent(C_EVENT.EVENT_TICK, self.UpdateTickDictFromEvent)
+        self.mainEngine.registerEvent(C_EVENT.EVENT_CONTRACT, self.UpdateContractDictFromEvent)
+        self.mainEngine.registerEvent(C_EVENT.EVENT_ORDER, self.UpdateOrderDictFromEvent)
+        self.mainEngine.registerEvent(C_EVENT.EVENT_TRADE, self.UpdateTradeDictFromEvent)
+        self.mainEngine.registerEvent(C_EVENT.EVENT_POSITION, self.UpdatePositionDictFromEvent)
+        self.mainEngine.registerEvent(C_EVENT.EVENT_ACCOUNT, self.UpdateAccountDictFromEvent)
 
     def UpdateTickDictFromEvent(self, event):
         # TickData

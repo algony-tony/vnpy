@@ -7,7 +7,7 @@
 from __future__ import division
 
 from vnpy.base_class import BarData
-from vnpy.vtConstant import DIRECTION_LONG, DIRECTION_SHORT
+from vnpy.vtConstant import C_DIRECTION as CDIR
 from vnpy.app.ctaStrategy.ctaTemplate import (CtaTemplate,
                                                      BarGenerator,
                                                      ArrayManager)
@@ -143,7 +143,7 @@ class TurtleTradingStrategy(CtaTemplate):
 
     def onTrade(self, trade):
         """成交推送"""
-        if trade.direction == DIRECTION_LONG:
+        if trade.direction == CDIR.DIRECTION_LONG:
             self.longEntry = trade.price
             self.longStop = self.longEntry - self.atrVolatility * 2
         else:

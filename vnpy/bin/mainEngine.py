@@ -35,7 +35,7 @@ class MainEngine(LoggingMixin):
         self.todayDate = datetime.now().strftime('%Y%m%d')
 
         self.eventEngine = EventEngine2(EventEngineSleepInterval)
-        self.dataEngine = DataEngine(self.eventEngine)
+        self.dataEngine = DataEngine(self)
         self.dbClient = None    # MongoDB客户端对象
 
         # 接口实例
@@ -59,7 +59,7 @@ class MainEngine(LoggingMixin):
     def addGateway(self, gatewayModule):
         gatewayName = gatewayModule.gatewayName
         self.gatewayDict[gatewayName] = \
-                gatewayModule.gatewayClass(self.eventEngine, gatewayName)
+                gatewayModule.gatewayClass(self, gatewayName)
 
         if gatewayModule.gatewayQryEnabled:
             self.gatewayDict[gatewayName].setQryEnabled(gatewayModule.gatewayQryEnabled)

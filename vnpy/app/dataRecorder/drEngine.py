@@ -31,7 +31,6 @@ class DrEngine(AppEngine):
     def __init__(self, mainEngine):
         """Constructor"""
         self.mainEngine = mainEngine
-        self.eventEngine = mainEngine.eventEngine
         self.today = todayDate()
 
         # 主力合约代码映射字典，key为具体的合约代码（如IF1604），value为主力合约代码（如IF0000）
@@ -56,8 +55,8 @@ class DrEngine(AppEngine):
 
     def registerEvent(self):
         """注册事件监听"""
-        self.eventEngine.register(C_EVENT.EVENT_TICK, self.procecssTickEvent)
-        self.eventEngine.register(C_EVENT.EVENT_TIMER, self.processTimerEvent)
+        self.mainEngine.registerEvent(C_EVENT.EVENT_TICK, self.procecssTickEvent)
+        self.mainEngine.registerEvent(C_EVENT.EVENT_TIMER, self.processTimerEvent)
 
     def startAll(self):
         self.active = True
