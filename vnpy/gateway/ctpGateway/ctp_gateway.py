@@ -709,7 +709,7 @@ class CtpTdApi(TdApi):
         contract.size = data['VolumeMultiple']
         contract.priceTick = data['PriceTick']
         contract.strikePrice = data['StrikePrice']
-        contract.productClass = productClassMapReverse.get(data['ProductClass'], PRODUCT_UNKNOWN)
+        contract.productClass = productClassMapReverse.get(data['ProductClass'], CPRO.PRODUCT_UNKNOWN)
         contract.expiryDate = data['ExpireDate']
 
         # ETF期权的标的命名方式需要调整（ETF代码 + 到期月份）
