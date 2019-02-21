@@ -121,8 +121,8 @@ class MainEngine(LoggingMixin):
     def registerEvent(self, type, handler):
         self.eventEngine.registerEvent(type, handler)
 
-    def putEvent(self, type, handler):
-        self.eventEngine.putEvent(type, handler)
+    def putEvent(self, event):
+        self.eventEngine.putEvent(event)
 
     def subscribe(self, subscribeReq, gatewayName):
         # 待删除
