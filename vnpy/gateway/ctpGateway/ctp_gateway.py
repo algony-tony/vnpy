@@ -20,6 +20,7 @@ from vnpy.vtConstant import C_OFFSET as COFF
 from vnpy.vtConstant import C_PRICETYPE as CPRI
 from vnpy.vtConstant import C_PRODUCT as CPRO
 from vnpy.vtConstant import C_ORDER_STATUS as OSTA
+from vnpy.vtConstant import C_OPTION as COPT
 from vnpy.config import gatewayconfig
 from vnpy.base_class import TickData, AccountData, OrderData
 from vnpy.base_class import ContractData, PositionData, TradeData
@@ -302,11 +303,11 @@ class CtpMdApi(MdApi):
         tick.askVolume1 = data['AskVolume1']
 
         # 大商所日期转换
-        if tick.exchange == EXCHANGE_DCE:
+        if tick.exchange == CEXC.EXCHANGE_DCE:
             tick.date = datetime.now().strftime('%Y%m%d')
 
         # 上交所，SSE，股票期权相关
-        if tick.exchange == EXCHANGE_SSE:
+        if tick.exchange == CEXC.EXCHANGE_SSE:
             tick.bidPrice2 = data['BidPrice2']
             tick.bidVolume2 = data['BidVolume2']
             tick.askPrice2 = data['AskPrice2']
@@ -512,9 +513,9 @@ class CtpTdApi(TdApi):
         order.vtSymbol = order.symbol
         order.orderID = data['OrderRef']
         order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
-        order.direction = directionMapReverse.get(data['Direction'], DIRECTION_UNKNOWN)
-        order.offset = offsetMapReverse.get(data['CombOffsetFlag'], OFFSET_UNKNOWN)
-        order.status = STATUS_REJECTED
+        order.direction = directionMapReverse.get(data['Direction'], CDIR.DIRECTION_UNKNOWN)
+        order.offset = offsetMapReverse.get(data['CombOffsetFlag'], COFF.OFFSET_UNKNOWN)
+        order.status = OSTA.STATUS_REJECTED
         order.price = data['LimitPrice']
         order.totalVolume = data['VolumeTotalOriginal']
         self.gateway.onOrder(order)
@@ -609,10 +610,10 @@ class CtpTdApi(TdApi):
             pos.direction = posiDirectionMapReverse.get(data['PosiDirection'], '')
             pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction])
 
-        exchange = self.symbolExchangeDict.get(pos.symbol, EXCHANGE_UNKNOWN)
+        exchange = self.symbolExchangeDict.get(pos.symbol, CEXC.EXCHANGE_UNKNOWN)
 
         # 针对上期所持仓的今昨分条返回（有昨仓、无今仓），读取昨仓数据
-        if exchange == EXCHANGE_SHFE:
+        if exchange == CEXC.EXCHANGE_SHFE:
             if data['YdPosition'] and not data['TodayPosition']:
                 pos.ydPosition = data['Position']
         # 否则基于总持仓和今持仓来计算昨仓数据
@@ -634,7 +635,7 @@ class CtpTdApi(TdApi):
             pos.price = (cost + data['PositionCost']) / (pos.position * size)
 
         # 读取冻结
-        if pos.direction is DIRECTION_LONG:
+        if pos.direction is CDIR.DIRECTION_LONG:
             pos.frozen += data['LongFrozen']
         else:
             pos.frozen += data['ShortFrozen']
@@ -713,18 +714,18 @@ class CtpTdApi(TdApi):
         contract.expiryDate = data['ExpireDate']
 
         # ETF期权的标的命名方式需要调整（ETF代码 + 到期月份）
-        if contract.exchange in [EXCHANGE_SSE, EXCHANGE_SZSE]:
+        if contract.exchange in [CEXC.EXCHANGE_SSE, CEXC.EXCHANGE_SZSE]:
             contract.underlyingSymbol = '-'.join([data['UnderlyingInstrID'], str(data['ExpireDate'])[2:-2]])
         # 商品期权无需调整
         else:
             contract.underlyingSymbol = data['UnderlyingInstrID']
 
         # 期权类型
-        if contract.productClass is PRODUCT_OPTION:
+        if contract.productClass is CPRO.PRODUCT_OPTION:
             if data['OptionsType'] == '1':
-                contract.optionType = OPTION_CALL
+                contract.optionType = COPT.OPTION_CALL
             elif data['OptionsType'] == '2':
-                contract.optionType = OPTION_PUT
+                contract.optionType = COPT.OPTION_PUT
 
         # 缓存代码和交易所的印射关系
         self.symbolExchangeDict[contract.symbol] = contract.exchange
@@ -880,9 +881,9 @@ class CtpTdApi(TdApi):
         # 考虑到VtTrader的应用场景，认为以上情况不会构成问题
         order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
 
-        order.direction = directionMapReverse.get(data['Direction'], DIRECTION_UNKNOWN)
-        order.offset = offsetMapReverse.get(data['CombOffsetFlag'], OFFSET_UNKNOWN)
-        order.status = statusMapReverse.get(data['OrderStatus'], STATUS_UNKNOWN)
+        order.direction = directionMapReverse.get(data['Direction'], CDIR.DIRECTION_UNKNOWN)
+        order.offset = offsetMapReverse.get(data['CombOffsetFlag'], COFF.OFFSET_UNKNOWN)
+        order.status = statusMapReverse.get(data['OrderStatus'], OSTA.STATUS_UNKNOWN)
 
         # 价格、报单量等数值
         order.price = data['LimitPrice']
@@ -937,9 +938,9 @@ class CtpTdApi(TdApi):
         order.vtSymbol = order.symbol
         order.orderID = data['OrderRef']
         order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
-        order.direction = directionMapReverse.get(data['Direction'], DIRECTION_UNKNOWN)
-        order.offset = offsetMapReverse.get(data['CombOffsetFlag'], OFFSET_UNKNOWN)
-        order.status = STATUS_REJECTED
+        order.direction = directionMapReverse.get(data['Direction'], CDIR.DIRECTION_UNKNOWN)
+        order.offset = offsetMapReverse.get(data['CombOffsetFlag'], COFF.OFFSET_UNKNOWN)
+        order.status = OSTA.STATUS_REJECTED
         order.price = data['LimitPrice']
         order.totalVolume = data['VolumeTotalOriginal']
         self.gateway.onOrder(order)
@@ -1233,11 +1234,11 @@ class CtpTdApi(TdApi):
         req['MinVolume'] = 1                                                 # 最小成交量为1
 
         # 判断FAK和FOK
-        if orderReq.priceType == PRICETYPE_FAK:
+        if orderReq.priceType == CPRI.PRICETYPE_FAK:
             req['OrderPriceType'] = defineDict["THOST_FTDC_OPT_LimitPrice"]
             req['TimeCondition'] = defineDict['THOST_FTDC_TC_IOC']
             req['VolumeCondition'] = defineDict['THOST_FTDC_VC_AV']
-        if orderReq.priceType == PRICETYPE_FOK:
+        if orderReq.priceType == CPRI.PRICETYPE_FOK:
             req['OrderPriceType'] = defineDict["THOST_FTDC_OPT_LimitPrice"]
             req['TimeCondition'] = defineDict['THOST_FTDC_TC_IOC']
             req['VolumeCondition'] = int(defineDict['THOST_FTDC_VC_CV'])
