@@ -14,7 +14,7 @@ class Event(LoggingMixin):
         self.dict_ = {}
 
 
-class BaseData(Object):
+class BaseData(LoggingMixin):
     """回调函数推送数据的基础类, 其他数据类继承于此"""
     def __init__(self):
         self.gatewayName = ''         # Gateway名称
