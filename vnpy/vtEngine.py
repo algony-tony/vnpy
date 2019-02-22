@@ -62,16 +62,17 @@ class DataEngine(LoggingMixin):
         contract = event.dict_['data']
         self.contractDict[contract.vtSymbol] = contract
         self.contractDict[contract.symbol] = contract
-        self.log.debug('UpdateContractDictFromEvent {con} {com}'.format(
+        self.log.debug('Contract: {con}, {com}'.format(
             con=contract.vtSymbol, com=contract.symbol
         ))
 
     def UpdateOrderDictFromEvent(self, event):
         # OrderData
-        self.log.debug('UpdateOrderDictFromEvent')
         order = event.dict_['data']
+        self.log.debug('Order:{oid}; vtSym:{sym}; Dir:{dir}; Pri:{pri}; Vol:{vol}'.format(
+            oid=order.vtOrderID, sym=order.vtSymbol, dir=order.direction,
+            pri=order.price, vol=order.totalVolume))
         self.orderDict[order.vtOrderID] = order
-
         # 移除交易完成订单
         if order.status in self.FinishedStatus:
             if order.vtOrderID in self.workingOrderDict:
@@ -85,27 +86,36 @@ class DataEngine(LoggingMixin):
 
     def UpdateTradeDictFromEvent(self, event):
         # TradeData
-        self.log.debug('UpdateTradeDictFromEvent')
         trade = event.dict_['data']
+        self.log.debug('Trade:{tid}; Order:{oid}; vtSym:{sym}; Dir:{dir}; Pri:{pri}; Vol:{vol}'.format(
+            tid=trade.vtTradeID, oid=trade.vtOrderID, sym=trade.vtSymbol,
+            dir=trade.direction, pri=trade.price, vol=trade.volume))
         self.tradeDict[trade.vtTradeID] = trade
-
         # 更新到持仓细节中
         detail = self.getPositionDetail(trade.vtSymbol)
         detail.updateTrade(trade)
 
     def UpdatePositionDictFromEvent(self, event):
         # PositionData
-        self.log.debug('UpdatePositionDictFromEvent')
         pos = event.dict_['data']
+        self.log.debug('vtSym:{sym}; Dir:{dir}; Pri:{pri}; Vol:{pos}; Profit:{pro}'.format(
+            sym=pos.vtSymbol, dir=pos.direction, pri=pos.price, vol=pos.position,
+            pro=pos.positionProfit))
         self.positionDict[pos.vtPositionName] = pos
         detail = self.getPositionDetail(pos.vtSymbol)
         detail.updatePosition(pos)
 
     def UpdateAccountDictFromEvent(self, event):
         # AccountData
-        account = event.dict_['data']
-        self.accountDict[account.vtAccountID] = account
-        self.log.debug('更新账号 {acc}'.format(acc=account.vtAccountID))
+        acc = event.dict_['data']
+        self.accountDict[acc.vtAccountID] = acc
+        self.log.debug(
+            ' '.join(['Acc:{acc};', '静金:{pre}', '动金:{bal};', '可用:{ava};', '手续费:{com};',
+                      '占用:{mar};','平盈:{cls};', '持盈:{pos};']).format(
+                          acc=acc.vtAccountID, pre=round(acc.preBalance,2),
+                          bal=round(acc.balance,2), ava=round(acc.available,2),
+                          com=round(acc.commission,2),mar=round(acc.margin,2),
+                          cls=round(acc.closeProfit,2), pos=round(acc.positionProfit,2)))
 
     def getTick(self, vtSymbol):
         try:
@@ -125,7 +135,7 @@ class DataEngine(LoggingMixin):
         return self.contractDict.values()
 
     def saveContracts(self):
-        self.log.debug('保存 {num} 合约到硬盘'.format(num=len(self.contractDict)))
+        self.log.debug('保存 {num} 个合约到硬盘'.format(num=len(self.contractDict)))
         with shelve.open(self.contractFilePath) as f:
             f['data'] = self.contractDict
 
