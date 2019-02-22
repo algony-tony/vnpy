@@ -21,11 +21,13 @@ from vnpy.vtConstant import C_PRICETYPE as CPRI
 from vnpy.vtConstant import C_PRODUCT as CPRO
 from vnpy.vtConstant import C_ORDER_STATUS as OSTA
 from vnpy.vtConstant import C_OPTION as COPT
+
 from vnpy.config import gatewayconfig
 from vnpy.base_class import TickData, AccountData, OrderData
 from vnpy.base_class import ContractData, PositionData, TradeData
 from vnpy.utility.file import getTempPath
-from vnpy.gateway.base_gateway import *
+from vnpy.utility.logging_mixin import LoggingMixin
+from vnpy.gateway.base_gateway import BaseGateway
 from vnpy.gateway.ctpGateway.vnctpmd import MdApi
 from vnpy.gateway.ctpGateway.vnctptd import TdApi
 from vnpy.gateway.ctpGateway.ctp_data_type import defineDict
@@ -190,7 +192,7 @@ class ctpGateway(BaseGateway):
         self.qryEnabled = qryEnabled
 
 
-class CtpMdApi(MdApi):
+class CtpMdApi(MdApi, LoggingMixin):
     """CTP行情API实现"""
 
     def __init__(self, gateway):
@@ -215,7 +217,7 @@ class CtpMdApi(MdApi):
     def onFrontConnected(self):
         """服务器连接"""
         self.connectionStatus = True
-        self.writeLog('行情服务器连接成功')
+        self.log.info('行情服务器连接成功')
         self.login()
 
     def onFrontDisconnected(self, n):
@@ -224,7 +226,7 @@ class CtpMdApi(MdApi):
         self.loginStatus = False
         self.gateway.mdConnected = False
 
-        self.writeLog('行情服务器连接断开')
+        self.log.info('行情服务器连接断开')
 
     def onHeartBeatWarning(self, n):
         """心跳报警"""
@@ -239,7 +241,7 @@ class CtpMdApi(MdApi):
         if error['ErrorID'] == 0:
             self.loginStatus = True
             self.gateway.mdConnected = True
-            self.writeLog('行情服务器登录完成')
+            self.log.info('行情服务器登录完成')
 
             # 重新订阅之前订阅的合约
             for subscribeReq in self.subscribedSymbols:
@@ -252,7 +254,7 @@ class CtpMdApi(MdApi):
         if error['ErrorID'] == 0:
             self.loginStatus = False
             self.gateway.mdConnected = False
-            self.writeLog('行情服务器登出完成')
+            self.log.info('行情服务器登出完成')
         else:
             self.writeErrorLog(error['ErrorID'], error['ErrorMsg'])
 
@@ -369,7 +371,7 @@ class CtpMdApi(MdApi):
         # 则先保存订阅请求，登录完成后会自动订阅
         if self.loginStatus:
             self.subscribeMarketData(str(subscribeReq.symbol))
-            self.writeLog('Subscribe {sy}'.format(sy=str(subscribeReq.symbol)))
+            self.log.info('Subscribe {sy}'.format(sy=str(subscribeReq.symbol)))
         self.subscribedSymbols.add(subscribeReq)
 
     def login(self):
@@ -384,14 +386,11 @@ class CtpMdApi(MdApi):
     def close(self):
         self.exit()
 
-    def writeLog(self, content):
-        self.gateway.log.info(content)
-
     def writeErrorLog(self, errid, errmsg):
-        self.gateway.log.info('Error {id}: {msg}'.format(id=errid, msg=errmsg))
+        self.log.warning('Error {id}: {msg}'.format(id=errid, msg=errmsg))
 
 
-class CtpTdApi(TdApi):
+class CtpTdApi(TdApi, LoggingMixin):
     """CTP交易API实现"""
 
     def __init__(self, gateway):
@@ -427,7 +426,7 @@ class CtpTdApi(TdApi):
         """服务器连接"""
         self.connectionStatus = True
 
-        self.writeLog('交易服务器连接成功')
+        self.log.info('交易服务器连接成功')
 
         if self.requireAuthentication:
             self.authenticate()
@@ -440,7 +439,7 @@ class CtpTdApi(TdApi):
         self.loginStatus = False
         self.gateway.tdConnected = False
 
-        self.writeLog('交易服务器连接断开')
+        self.log.info('交易服务器连接断开')
 
     def onHeartBeatWarning(self, n):
         """"""
@@ -451,7 +450,7 @@ class CtpTdApi(TdApi):
         if error['ErrorID'] == 0:
             self.authStatus = True
 
-            self.writeLog('交易服务器验证成功')
+            self.log.info:('交易服务器验证成功')
 
             self.login()
         else:
@@ -466,7 +465,7 @@ class CtpTdApi(TdApi):
             self.loginStatus = True
             self.gateway.tdConnected = True
 
-            self.writeLog('交易服务器登录完成')
+            self.log.info:('交易服务器登录完成')
 
             # 确认结算信息
             req = {}
@@ -489,7 +488,7 @@ class CtpTdApi(TdApi):
             self.loginStatus = False
             self.gateway.tdConnected = False
 
-            self.writeLog('交易服务器登出完成')
+            self.log.info:('交易服务器登出完成')
 
         # 否则，推送错误信息
         else:
@@ -541,7 +540,7 @@ class CtpTdApi(TdApi):
 
     def onRspSettlementInfoConfirm(self, data, error, n, last):
         """确认结算信息回报"""
-        self.writeLog('结算信息确认完成')
+        self.log.info('结算信息确认完成')
 
         # 查询合约代码
         self.reqID += 1
@@ -738,7 +737,7 @@ class CtpTdApi(TdApi):
         symbolExchangeDict[contract.symbol] = contract.exchange
 
         if last:
-            self.writeLog('交易合约信息获取完成')
+            self.log.info('交易合约信息获取完成')
 
     def onRspQryDepthMarketData(self, data, error, n, last):
         """"""
@@ -945,7 +944,6 @@ class CtpTdApi(TdApi):
         order.totalVolume = data['VolumeTotalOriginal']
         self.gateway.onOrder(order)
 
-        # 推送错误信息
         self.writeErrorLog(error['ErrorID'], error['ErrorMsg'])
 
     def onErrRtnOrderAction(self, data, error):
@@ -1270,9 +1268,6 @@ class CtpTdApi(TdApi):
     def close(self):
         self.exit()
 
-    def writeLog(self, content):
-        self.gateway.log.info(content)
-
     def writeErrorLog(self, errid, errmsg):
-        self.gateway.log.info('Error {id}: {msg}'.format(id=errid, msg=errmsg))
+        self.log.warning('Error {id}: {msg}'.format(id=errid, msg=errmsg))
 

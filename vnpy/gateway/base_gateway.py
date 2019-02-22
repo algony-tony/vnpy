@@ -80,9 +80,6 @@ class BaseGateway(LoggingMixin):
     def onError(self, error):
         self.log.info('Error ' + error)
 
-    def onLog(self, msg):
-        self.log.info(msg)
-
     def onContract(self, contract):
         """合约基础信息推送"""
         # 通用事件
