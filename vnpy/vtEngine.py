@@ -98,7 +98,7 @@ class DataEngine(LoggingMixin):
     def UpdatePositionDictFromEvent(self, event):
         # PositionData
         pos = event.dict_['data']
-        self.log.debug('vtSym:{sym}; Dir:{dir}; Pri:{pri}; Vol:{pos}; Profit:{pro}'.format(
+        self.log.debug('vtSym:{sym}; Dir:{dir}; Pri:{pri}; Vol:{vol}; Profit:{pro}'.format(
             sym=pos.vtSymbol, dir=pos.direction, pri=pos.price, vol=pos.position,
             pro=pos.positionProfit))
         self.positionDict[pos.vtPositionName] = pos
