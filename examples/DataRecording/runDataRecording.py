@@ -40,13 +40,12 @@ def runParentProcess():
             (currentTime <= NIGHT_END)):
             recording = True
 
-        # 过滤周末时间段：周六全天，周五夜盘，周日日盘
+        # Monday:0, Sunday:6
         if ((datetime.today().weekday() == 6) or
             (datetime.today().weekday() == 5 and currentTime > NIGHT_END) or
             (datetime.today().weekday() == 0 and currentTime < DAY_START)):
             recording = False
 
-        # 记录时间则需要启动子进程
         if recording and p is None:
             p = multiprocessing.Process(target=runChildProcess)
             p.start()
@@ -57,9 +56,9 @@ def runParentProcess():
             p.join()
             p = None
 
-        sleep(5)
+        sleep(60)
 
 
 if __name__ == '__main__':
-    runChildProcess()
-    # runParentProcess()
+    # runChildProcess()
+    runParentProcess()
