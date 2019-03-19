@@ -14,3 +14,5 @@ qtpy
 psutil
 ta-lib
 futu-api
+sqlalchemy
+mysqlclient
